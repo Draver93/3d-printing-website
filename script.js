@@ -203,7 +203,7 @@ async function renderFooter() {
 
   document.getElementById("footer").innerHTML = `
     <div class="footer-inner">
-      <div class="footer-copy">&copy; 2026 3DPrint</div>
+      <div class="footer-copy">&copy; 2026 Suntar-Plastic</div>
       <div class="footer-links">${links}</div>
     </div>
   `;

@@ -9,7 +9,7 @@
   "hero": {
     "title": "Custom",
     "titleHighlight": "3D Printing",
-    "subtitle": "Hard-to-find replacement parts, custom components, and unique decorative items — printed locally and delivered fast. No minimum order, no shipping wait.",
+    "subtitle": "Hard-to-find replacement parts, custom components, and unique decorative items — serving Suntar, Yakutia, Sakha Republic. Printed locally and delivered fast. No minimum order, no shipping wait.",
     "cta": "Request a Quote",
     "secondary": "View Services"
   },
@@ -42,7 +42,7 @@
     "subtitle": "Local, fast, and affordable 3D printing.",
     "point1": { "title": "Fast Turnaround", "desc": "Most parts printed and ready within 24 hours. No weeks of waiting for online orders." },
     "point2": { "title": "No Minimum Order", "desc": "Need just one part? No problem. We don't require bulk orders." },
-    "point3": { "title": "Local & Personal", "desc": "Talk directly to the person printing your part. No call centers, no tickets." }
+    "point3": { "title": "Local in Yakutia", "desc": "Talk directly to the person printing your part. No call centers, no tickets. We are based in Suntar, Sakha Republic (Yakutia)." }
   },
   "gallery": {
     "title": "Gallery",
