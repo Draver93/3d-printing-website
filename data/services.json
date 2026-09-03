@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Replacement Parts",
+    "description": "Can't find a part for your car, appliance, or machine? We model and print hard-to-find components that are no longer manufactured.",
+    "icon": "⚙",
+    "link": ""
+  },
+  {
+    "title": "Custom Parts",
+    "description": "Send us a sketch or measurements and we will design and print brackets, mounts, enclosures, and more.",
+    "icon": "🔧",
+    "link": ""
+  },
+  {
+    "title": "Decorative Items",
+    "description": "Phone stands, cable organizers, planters, storage boxes, and other functional everyday items.",
+    "icon": "🎁",
+    "link": ""
+  },
+  {
+    "title": "3D Scanning & Modeling",
+    "description": "Have a broken part but no 3D file? We scan the original and recreate it digitally for printing.",
+    "icon": "📐",
+    "link": ""
+  }
+]
