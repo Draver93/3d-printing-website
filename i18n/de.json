@@ -56,5 +56,48 @@
     "title": "Bereit anzufangen?",
     "subtitle": "Schreiben Sie uns auf WhatsApp und wir antworten schnell.",
     "button": "Auf WhatsApp schreiben"
+  },
+  "pricing": {
+    "title": "Preisschätzer",
+    "subtitle": "Ungefähre Kosten für Ihr Teil.",
+    "weightLabel": "Geschätztes Gewicht (Gramm)",
+    "materialLabel": "Material",
+    "modelingLabel": "3D-Modellierung erforderlich?",
+    "yes": "Ja",
+    "no": "Nein",
+    "estimateBtn": "Preis schätzen",
+    "resultTitle": "Geschätzter Preis",
+    "oneTime": "einmalige Einrichtung",
+    "perGram": "pro Gramm",
+    "modeling": "Modellierungsgebühr",
+    "then": "+",
+    "totalLabel": "Geschätzte Gesamtkosten",
+    "register": "Anmelden",
+    "notesTitle": "Hinweise"
+  },
+  "materials": {
+    "title": "Materialvergleich",
+    "subtitle": "Wählen Sie das richtige Material für Ihr Teil.",
+    "strength": "Festigkeit",
+    "heatResistance": "Hitzebeständigkeit",
+    "flexibility": "Flexibilität",
+    "bestFor": "Am besten geeignet für",
+    "recommended": "Empfohlen"
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "subtitle": "Antworten auf gängige Fragen zu unserem Service."
+  },
+  "testimonials": {
+    "title": "Kundenbewertungen",
+    "subtitle": "Was die Leute in unserer Region über uns sagen."
+  },
+  "fileRef": {
+    "title": "Größenreferenz",
+    "subtitle": "Ungefähre Druckgrößen und Gewichte zur Schätzung."
+  },
+  "map": {
+    "title": "Wo wir sind",
+    "subtitle": "Wir befinden uns in Suntar, Republik Sacha."
   }
 }

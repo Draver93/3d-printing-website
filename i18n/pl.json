@@ -56,5 +56,48 @@
     "title": "Gotowy, żeby zacząć?",
     "subtitle": "Napisz do nas na WhatsApp, a szybko odpowiemy.",
     "button": "Napisz na WhatsApp"
+  },
+  "pricing": {
+    "title": "Kalkulator cen",
+    "subtitle": "Przybliżony koszt Twojej części.",
+    "weightLabel": "Przybliżona waga (gramy)",
+    "materialLabel": "Materiał",
+    "modelingLabel": "Potrzebne modelowanie 3D?",
+    "yes": "Tak",
+    "no": "Nie",
+    "estimateBtn": "Oblicz cenę",
+    "resultTitle": "Przybliżona cena",
+    "oneTime": "jednorazowa konfiguracja",
+    "perGram": "za gram",
+    "modeling": "modelowanie",
+    "then": "+",
+    "totalLabel": "Szacowany koszt",
+    "register": "Rejestracja",
+    "notesTitle": "Uwagi"
+  },
+  "materials": {
+    "title": "Porównanie materiałów",
+    "subtitle": "Wybierz odpowiedni materiał do swojej części.",
+    "strength": "Wytrzymałość",
+    "heatResistance": "Odporność na ciepło",
+    "flexibility": "Elastyczność",
+    "bestFor": "Najlepsze dla",
+    "recommended": "Polecany"
+  },
+  "faq": {
+    "title": "Najczęściej zadawane pytania",
+    "subtitle": "Odpowiedzi na popularne pytania o nasze usługi."
+  },
+  "testimonials": {
+    "title": "Opinie klientów",
+    "subtitle": "Co mówią o nas ludzie w naszym regionie."
+  },
+  "fileRef": {
+    "title": "Tabela rozmiarów",
+    "subtitle": "Przybliżone rozmiary i wagi do szacowania kosztów."
+  },
+  "map": {
+    "title": "Gdzie się znajdujemy",
+    "subtitle": "Jesteśmy w Suntarskim Rejonie Republiki Sacha."
   }
 }
