@@ -136,6 +136,37 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
 .status-bar.error { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 .status-bar.info { display: block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
 
+/* ===== TAB BAR ===== */
+.tab-bar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.tab:hover { border-color: var(--primary); color: var(--text); }
+.tab.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
 /* ===== FORM PANEL ===== */
 .form-panel { background: transparent; }
 
