@@ -1,0 +1,38 @@
+[
+  {
+    "name": "PLA",
+    "icon": "🌿",
+    "strength": "3",
+    "heatResistance": "2",
+    "flexibility": "2",
+    "bestFor": "Decorative items, prototypes, phone stands",
+    "recommended": true
+  },
+  {
+    "name": "PETG",
+    "icon": "💪",
+    "strength": "4",
+    "heatResistance": "4",
+    "flexibility": "3",
+    "bestFor": "Car parts, outdoor items, mechanical components",
+    "recommended": false
+  },
+  {
+    "name": "ABS",
+    "icon": "🛡",
+    "strength": "4",
+    "heatResistance": "5",
+    "flexibility": "3",
+    "bestFor": "Automotive interiors, high-temperature environments",
+    "recommended": false
+  },
+  {
+    "name": "TPU",
+    "icon": "🧸",
+    "strength": "3",
+    "heatResistance": "3",
+    "flexibility": "5",
+    "bestFor": "Gaskets, bumpers, rubber-like parts, phone cases",
+    "recommended": false
+  }
+]

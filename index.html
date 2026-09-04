@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Suntar-Plastic - Local 3D Printing Services</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header id="topbar">
@@ -26,6 +27,7 @@
           <button class="lang-btn" id="langToggle">EN ▾</button>
           <div class="lang-dropdown" id="langDropdown"></div>
         </div>
+        <button class="theme-toggle" id="themeToggle">🌙</button>
         <a href="#contact" class="btn-cta" data-i18n="nav.quote">Get a Quote</a>
       </div>
     </div>
@@ -35,6 +37,7 @@
 
   <footer id="footer"></footer>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

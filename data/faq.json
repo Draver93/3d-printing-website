@@ -1,0 +1,26 @@
+[
+  {
+    "question": "How long does a print take?",
+    "answer": "Most prints are ready within 24 hours. Small parts can be done the same day, larger projects may take 2-3 days."
+  },
+  {
+    "question": "What materials do you use?",
+    "answer": "We currently print with PLA, PETG, ABS, and TPU. Each has different properties — see the materials comparison section above."
+  },
+  {
+    "question": "Do you need a 3D file from me?",
+    "answer": "No, but it helps! If you have an STL file, great. If not, we can model it from photos and measurements, or 3D scan the original part."
+  },
+  {
+    "question": "How much does it cost?",
+    "answer": "It depends on size, material, and whether modeling is needed. Use the price estimator above to get a rough idea, then message us on WhatsApp for an exact quote."
+  },
+  {
+    "question": "Do you deliver?",
+    "answer": "Locally we offer pickup or delivery within the area. For faraway regions, we can ship via postal services."
+  },
+  {
+    "question": "Can you print in color?",
+    "answer": "We have several filament colors available. Ask us what's in stock when you order."
+  }
+]

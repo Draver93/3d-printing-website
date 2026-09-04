@@ -1,0 +1,15 @@
+{
+  "materials": [
+    { "name": "PLA", "pricePerGram": 3 },
+    { "name": "PETG", "pricePerGram": 4 },
+    { "name": "ABS", "pricePerGram": 5 },
+    { "name": "TPU", "pricePerGram": 6 }
+  ],
+  "basePrice": 200,
+  "modelingFee": 300,
+  "notes": [
+    "Base price includes setup and slicing.",
+    "Modeling fee applies only if we need to create the 3D model from scratch.",
+    "Prices in RUB. Delivery not included."
+  ]
+}

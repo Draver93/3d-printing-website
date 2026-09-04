@@ -37,6 +37,41 @@
     "stat3": { "value": "100%", "label": "Custom Made" },
     "stat4": { "value": "4+", "label": "Material Types" }
   },
+  "pricing": {
+    "title": "Price Estimator",
+    "subtitle": "Get a rough idea of what your part will cost.",
+    "weightLabel": "Estimated weight (grams)",
+    "materialLabel": "Material",
+    "modelingLabel": "3D modeling needed?",
+    "yes": "Yes",
+    "no": "No",
+    "estimateBtn": "Estimate Price",
+    "resultTitle": "Estimated Price",
+    "oneTime": "one-time setup",
+    "perGram": "per gram",
+    "modeling": "modeling fee",
+    "then": "+",
+    "totalLabel": "Total estimate",
+    "register": "Register",
+    "notesTitle": "Notes"
+  },
+  "materials": {
+    "title": "Material Comparison",
+    "subtitle": "Choose the right material for your part.",
+    "strength": "Strength",
+    "heatResistance": "Heat Resistance",
+    "flexibility": "Flexibility",
+    "bestFor": "Best for",
+    "recommended": "Recommended"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Answers to common questions about our service."
+  },
+  "testimonials": {
+    "title": "Customer Reviews",
+    "subtitle": "What people in our area say about us."
+  },
   "why": {
     "title": "Why Choose Us",
     "subtitle": "Local, fast, and affordable 3D printing.",
@@ -56,5 +91,13 @@
     "title": "Ready to Get Started?",
     "subtitle": "Send us a message on WhatsApp and we'll get back to you quickly.",
     "button": "Chat on WhatsApp"
+  },
+  "fileRef": {
+    "title": "Size Reference",
+    "subtitle": "Approximate print sizes and weights to help you estimate."
+  },
+  "map": {
+    "title": "Where We Are",
+    "subtitle": "We are located in Suntar, Sakha Republic."
   }
 }

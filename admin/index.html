@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suntar-Plastic Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>Suntar<span>-Plastic</span> Admin</h1>
+      <div class="header-actions">
+        <button class="btn-secondary" id="loadBtn">Load JSONs</button>
+        <button class="btn-primary" id="pushBtn">Save & Push to Git</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="config-bar">
+      <div class="config-field">
+        <label>GitHub Token</label>
+        <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+      </div>
+      <div class="config-field">
+        <label>Repo (owner/repo)</label>
+        <input type="text" id="repoInput" placeholder="username/3d-printing-website">
+      </div>
+      <div class="config-field">
+        <label>Branch</label>
+        <input type="text" id="branchInput" value="main">
+      </div>
+    </div>
+    <div class="status-bar" id="statusBar"></div>
+    <div class="editor-grid" id="editorGrid"></div>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
