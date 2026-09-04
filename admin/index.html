@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Suntar-Plastic Admin</title>
+  <title>Suntar-Plastic Admin Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,11 +11,23 @@
     <div class="header-inner">
       <h1>Suntar<span>-Plastic</span> Admin</h1>
       <div class="header-actions">
-        <button class="btn-secondary" id="loadBtn">Load JSONs</button>
-        <button class="btn-primary" id="pushBtn">Save & Push to Git</button>
+        <select id="fileTypeSelect" class="file-type-select">
+          <option value="services">Services</option>
+          <option value="gallery">Gallery</option>
+          <option value="news">News & Tips</option>
+          <option value="testimonials">Testimonials</option>
+          <option value="materials">Materials</option>
+          <option value="pricing">Pricing</option>
+          <option value="faq">FAQ</option>
+          <option value="promo">Promo Banner</option>
+          <option value="social">Social Links</option>
+        </select>
+        <button class="btn-secondary" id="loadBtn">Load</button>
+        <button class="btn-primary" id="saveBtn">Save</button>
       </div>
     </div>
   </header>
+
   <main>
     <div class="config-bar">
       <div class="config-field">
@@ -32,7 +44,8 @@
       </div>
     </div>
     <div class="status-bar" id="statusBar"></div>
-    <div class="editor-grid" id="editorGrid"></div>
+
+    <div class="form-panel" id="formPanel"></div>
   </main>
   <script src="script.js"></script>
 </body>
