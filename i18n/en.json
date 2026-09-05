@@ -53,7 +53,8 @@
     "then": "+",
     "totalLabel": "Total estimate",
     "register": "Register",
-    "notesTitle": "Notes"
+    "notesTitle": "Notes",
+    "hint": "Enter the part details and press \u201cEstimate Price\u201d for a rough cost."
   },
   "materials": {
     "title": "Material Comparison",
@@ -94,7 +95,13 @@
   },
   "fileRef": {
     "title": "Size Reference",
-    "subtitle": "Approximate print sizes and weights to help you estimate."
+    "subtitle": "Approximate print sizes and weights to help you estimate.",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
+    "smallSize": "~20g \u00b7 ~3cm",
+    "mediumSize": "~80g \u00b7 ~10cm",
+    "largeSize": "~200g \u00b7 ~20cm"
   },
   "map": {
     "title": "Where We Are",

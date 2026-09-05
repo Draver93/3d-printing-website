@@ -75,12 +75,17 @@ function initPricing(pricing) {
   modelingYes.onclick = () => { needsModeling = true; modelingYes.classList.add("active"); modelingNo.classList.remove("active"); };
 
   calcBtn.onclick = () => {
-    const weight = parseInt(weightInput.value) || 50;
+    const weight = Math.max(1, parseInt(weightInput.value) || 50);
     const pricePerGram = parseInt(materialSelect.value);
     const materialCost = weight * pricePerGram;
     const total = pricing.basePrice + materialCost + (needsModeling ? pricing.modelingFee : 0);
-    totalEl.innerHTML = `<span class="price-value">${total} ₽</span><span class="price-breakdown">${pricing.basePrice} ₽ ${t("pricing.oneTime")} + ${materialCost} ₽ (${weight}g × ${pricePerGram} ₽ ${t("pricing.perGram")})${needsModeling ? ` + ${pricing.modelingFee} ₽ ${t("pricing.modeling")}` : ""}</span>`;
-    result.style.display = "block";
+    totalEl.innerHTML = `<span class="price-total-label">${t("pricing.totalLabel")}</span>` +
+      `<span class="price-value">${total.toLocaleString("ru-RU")} ₽</span>` +
+      `<span class="price-breakdown">${pricing.basePrice.toLocaleString("ru-RU")} ₽ ${t("pricing.oneTime")}` +
+      ` + ${materialCost.toLocaleString("ru-RU")} ₽ (${weight} g \u00d7 ${pricePerGram} ₽ ${t("pricing.perGram")})` +
+      (needsModeling ? ` + ${pricing.modelingFee.toLocaleString("ru-RU")} ₽ ${t("pricing.modeling")}` : "") +
+      `</span>`;
+    result.classList.add("has-result");
   };
 }
 
@@ -210,15 +215,15 @@ async function renderHome() {
           <div class="pricing-field">
             <label>${t("pricing.modelingLabel")}</label>
             <div class="pricing-toggle">
-              <button id="modelingNo" class="pricing-toggle-btn active">${t("pricing.no")}</button>
-              <button id="modelingYes" class="pricing-toggle-btn">${t("pricing.yes")}</button>
+              <button type="button" id="modelingNo" class="pricing-toggle-btn active">${t("pricing.no")}</button>
+              <button type="button" id="modelingYes" class="pricing-toggle-btn">${t("pricing.yes")}</button>
             </div>
           </div>
-          <button class="btn-primary" id="calcBtn">${t("pricing.estimateBtn")}</button>
+          <button type="button" class="btn-primary" id="calcBtn">${t("pricing.estimateBtn")}</button>
         </div>
-        <div class="pricing-result" id="pricingResult" style="display:none">
+        <div class="pricing-result" id="pricingResult">
           <div class="pricing-result-title">${t("pricing.resultTitle")}</div>
-          <div class="pricing-total" id="pricingTotal"></div>
+          <div class="pricing-total" id="pricingTotal"><span class="price-hint">${t("pricing.hint")}</span></div>
         </div>
       </div>
       <div class="pricing-notes">
@@ -260,9 +265,9 @@ async function renderHome() {
       <h2 class="section-title">${t("fileRef.title")}</h2>
       <p class="section-subtitle">${t("fileRef.subtitle")}</p>
       <div class="size-ref-grid">
-        <div class="size-ref-card"><div class="size-icon">📱</div><div class="size-label">Small</div><div class="size-desc">~20g · ~3cm</div></div>
-        <div class="size-ref-card"><div class="size-icon">📦</div><div class="size-label">Medium</div><div class="size-desc">~80g · ~10cm</div></div>
-        <div class="size-ref-card"><div class="size-icon">🎁</div><div class="size-label">Large</div><div class="size-desc">~200g · ~20cm</div></div>
+        <div class="size-ref-card"><div class="size-icon">📱</div><div class="size-label">${t("fileRef.small")}</div><div class="size-desc">${t("fileRef.smallSize")}</div></div>
+        <div class="size-ref-card"><div class="size-icon">📦</div><div class="size-label">${t("fileRef.medium")}</div><div class="size-desc">${t("fileRef.mediumSize")}</div></div>
+        <div class="size-ref-card"><div class="size-icon">🎁</div><div class="size-label">${t("fileRef.large")}</div><div class="size-desc">${t("fileRef.largeSize")}</div></div>
       </div>
     </div>
 
