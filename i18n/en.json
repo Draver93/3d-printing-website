@@ -84,8 +84,13 @@
     "point3": { "title": "Local in Yakutia", "desc": "Talk directly to the person printing your part. No call centers, no tickets. We are based in Suntar, Sakha Republic (Yakutia)." }
   },
   "gallery": {
-    "title": "Gallery",
-    "subtitle": "A selection of our recent prints and projects."
+    "title": "Portfolio",
+    "subtitle": "Projects we've printed, and ready-made models you can order."
+  },
+  "portfolio": {
+    "work": "Our Work",
+    "models": "Ready-Made Models",
+    "order": "Order"
   },
   "news": {
     "title": "News & Tips",

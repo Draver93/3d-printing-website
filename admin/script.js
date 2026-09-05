@@ -14,6 +14,14 @@ const SCHEMAS = {
       { key: "description", label: "Description", type: "textarea" },
       { key: "image", label: "Image URL", type: "text" },
     ] },
+  catalog: { path: "data/catalog.json", label: "Catalog (ready-made models)", array: true,
+    fields: [
+      { key: "name", label: "Name", type: "text" },
+      { key: "description", label: "Description", type: "textarea" },
+      { key: "price", label: "Price (₽)", type: "number" },
+      { key: "icon", label: "Icon (emoji)", type: "text" },
+      { key: "image", label: "Image URL (optional)", type: "text" },
+    ] },
   news: { path: "data/news.json", label: "News & Tips", array: true,
     fields: [
       { key: "title", label: "Title", type: "text" },

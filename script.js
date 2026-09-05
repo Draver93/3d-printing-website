@@ -249,6 +249,22 @@ function initTestimonials() {
   }, { passive: true });
 }
 
+function initPortfolio() {
+  const tabs = document.getElementById("portfolioTabs");
+  if (!tabs) return;
+  tabs.querySelectorAll(".portfolio-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      tabs.querySelectorAll(".portfolio-tab").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const kind = btn.dataset.kind;
+      const workPanel = document.getElementById("panel-work");
+      const modelsPanel = document.getElementById("panel-models");
+      if (workPanel) workPanel.hidden = kind !== "work";
+      if (modelsPanel) modelsPanel.hidden = kind !== "models";
+    });
+  });
+}
+
 function updateThemeBtn(btn) {
   btn.textContent = document.body.classList.contains("dark") ? "☀" : "🌙";
 }
@@ -264,6 +280,7 @@ async function renderSite() {
   const faq = await loadJSON("data/faq.json");
   const testimonials = await loadJSON("data/testimonials.json");
   const gallery = await loadJSON("data/gallery.json");
+  const catalog = await loadJSON("data/catalog.json");
   const news = await loadJSON("data/news.json");
 
   const promoHtml = promo.active
@@ -397,13 +414,35 @@ async function renderSite() {
     <div class="gallery-section" id="gallery">
       <h2 class="section-title">${t("gallery.title")}</h2>
       <p class="section-subtitle">${t("gallery.subtitle")}</p>
-      <div class="gallery-grid">
-        ${gallery.map((item) => `
-          <div class="gallery-card">
-            ${item.image ? `<img src="${item.image}" alt="${item.title}">` : '<div style="height:180px;background:#e2e8f0"></div>'}
-            <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
-          </div>
-        `).join("")}
+
+      <div class="portfolio-tabs" id="portfolioTabs">
+        <button type="button" class="portfolio-tab active" data-kind="work">${t("portfolio.work")}</button>
+        <button type="button" class="portfolio-tab" data-kind="models">${t("portfolio.models")}</button>
+      </div>
+
+      <div class="portfolio-panel" id="panel-work">
+        <div class="gallery-grid">
+          ${gallery.map((item) => `
+            <div class="gallery-card">
+              ${item.image ? `<img src="${item.image}" alt="${item.title}">` : '<div class="gallery-photo-placeholder">🖼</div>'}
+              <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="portfolio-panel" id="panel-models" hidden>
+        <div class="catalog-grid">
+          ${catalog.map((item) => `
+            <div class="catalog-card">
+              ${item.image ? `<img class="catalog-photo" src="${item.image}" alt="${item.name}">` : `<div class="catalog-icon">${item.icon || "🛒"}</div>`}
+              <h3>${item.name}</h3>
+              <p>${item.description}</p>
+              <div class="catalog-price">${item.price.toLocaleString("ru-RU")} ₽</div>
+              <a href="${social.whatsapp}?text=${encodeURIComponent("Hi, I want to order: " + item.name)}" target="_blank" class="btn-order">${t("portfolio.order")}</a>
+            </div>
+          `).join("")}
+        </div>
       </div>
     </div>
 
@@ -496,6 +535,7 @@ async function renderSite() {
   initPricing(pricing);
   initRequestForm(social.contactEmail);
   initTestimonials();
+  initPortfolio();
 }
 
 async function renderFooter() {
