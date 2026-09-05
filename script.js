@@ -45,7 +45,7 @@ async function loadJSON(path) {
 }
 
 function setNavActive(id) {
-  document.querySelectorAll(".main-nav a").forEach((a) => {
+  document.querySelectorAll(".main-nav a, .mobile-nav a").forEach((a) => {
     a.classList.toggle("active", a.dataset.page === id);
   });
 }
@@ -864,6 +864,49 @@ async function renderFooter() {
   `;
 }
 
+function initMobileNav() {
+  const toggle = document.getElementById("navToggle");
+  const drawer = document.getElementById("mobileNav");
+  if (!toggle || !drawer) return;
+
+  const links = NAV_SECTIONS.map((id) => {
+    const label = `nav.${id}`;
+    const href = id === "catalog" || id === "home" ? `#${id}` : `#${id}`;
+    return `<a href="${href}" data-page="${id}" data-i18n="${label}">${t(label)}</a>`;
+  }).join("");
+
+  const cta = `<a href="#catalog-request" class="btn-cta mobile-cta" data-i18n="nav.quote">${t("nav.quote")}</a>`;
+  drawer.innerHTML = links + cta;
+  applyTranslations();
+
+  function open() {
+    drawer.hidden = false;
+    toggle.setAttribute("aria-expanded", "true");
+    toggle.textContent = "✕";
+    document.body.classList.add("nav-open");
+  }
+
+  function close() {
+    drawer.hidden = true;
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.textContent = "☰";
+    document.body.classList.remove("nav-open");
+  }
+
+  toggle.addEventListener("click", () => {
+    if (drawer.hidden) open();
+    else close();
+  });
+
+  drawer.addEventListener("click", (e) => {
+    if (e.target.closest("a")) close();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+}
+
 /* ===== INIT ===== */
 document.addEventListener("DOMContentLoaded", async () => {
   buildLangDropdown();
@@ -881,6 +924,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await renderSite();
   renderFooter();
+  initMobileNav();
   window.addEventListener("hashchange", applyHash);
 
   let ticking = false;

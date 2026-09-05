@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d1b2a">
+  <meta name="description" content="Suntar-Plastic — local 3D printing services in Suntar. Print-on-demand parts, custom models.">
   <title>Suntar-Plastic - Local 3D Printing Services</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,6 +28,7 @@
         </nav>
       </div>
       <div class="topbar-right">
+        <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="mobileNav">☰</button>
         <div class="lang-switcher">
           <button class="lang-btn" id="langToggle">EN ▾</button>
           <div class="lang-dropdown" id="langDropdown"></div>
@@ -34,6 +37,7 @@
         <a href="#catalog-request" class="btn-cta" data-i18n="nav.quote">Request a Model</a>
       </div>
     </div>
+    <nav class="mobile-nav" id="mobileNav" hidden></nav>
   </header>
 
   <main id="app"></main>
