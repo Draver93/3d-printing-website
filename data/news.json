@@ -19,5 +19,26 @@
     "content": "Ordering a spare part online usually means long shipping delays, high delivery costs, and minimum order requirements. Printing locally in Suntar removes all three obstacles.\n\nNo shipping wait. Once we confirm your model, most parts are ready within a day. Instead of waiting weeks for a package to cross the country, you pick up your part in person or receive it via local delivery.\n\nNo minimum order. Many online services require a minimum spend or batch size. With us, a single small part is just as welcome as a full set. You pay for what you need, nothing more.\n\nDirect communication. You can bring in the broken part, describe the problem in your own words, and ask questions while we work. If something needs adjusting, we fix it on the spot and you see the result immediately.\n\nFor most projects, local printing is simply faster, cheaper, and much more flexible than ordering from the other side of the globe.",
     "date": "2026-08-18",
     "image": "images/news-local.svg"
+  },
+  {
+    "title": "From Sketch to Finished Part in One Day",
+    "description": "A short tour of how a simple request becomes a printed part: design, slicing, printing, and post-processing — often finished the same day.",
+    "content": "Have you ever wondered how a 3D print goes from an idea to a finished object? Here is what happens inside our workshop after you make a request.\n\nDesign. If your part needs to be modeled from scratch, the first step is creating a 3D model. We work from photos, measurements, or a reference object to build a model that matches your part as closely as possible.\n\nSlicing. Once the model is ready, we import it into slicing software. This step decides how the part will be printed, layer by layer: orientation on the printer bed, density of the infill, and the thickness of each layer all affect strength, speed, and surface quality.\n\nPrinting. The printer builds the part by melting plastic filament and laying it down in thin layers. Simple parts can take a couple of hours; larger or more detailed ones may take most of the day.\n\nPost-processing. After printing we remove supports, sand the surface where needed, and do the final check. The result is a clean, finished part ready for you to pick up.\n\nMost single-part orders fit comfortably into one working day. Drop by in the morning and collect your part by the evening.",
+    "date": "2026-08-10",
+    "image": "images/news-measure.svg"
+  },
+  {
+    "title": "ABS, TPU and Beyond: Special Filaments",
+    "description": "Beyond PLA and PETG we also print with ABS and flexible TPU. Learn when these materials make sense for your project.",
+    "content": "While PLA and PETG cover most orders, some parts simply cannot do without a more specialized material. Here is an overview of what we keep on the shelves.\n\nABS is the classic choice for automotive and appliance parts. It is impact-resistant and tolerates higher temperatures than PLA. One thing to keep in mind is that ABS tends to shrink while cooling, so large flat parts may need a heated enclosure, which we have.\n\nTPU is a flexible filament used for gaskets, phone cases, bumpers, and anything that needs to bend. Depending on the grade, the printed part can be soft like a rubber band or firm like a bicycle tire. Printing TPU is slower, but the flexibility it adds cannot be replicated by rigid plastics.\n\nNylon is an option for heavy-duty mechanical parts that face constant wear and abrasion. It is strong, durable, and tough to break, which makes it a favourite for gears and bushings.\n\nIf you are not sure what material your part needs, bring it in and describe how you will use it. We will suggest the right filament and, if needed, print a quick test piece before making the full part.",
+    "date": "2026-08-02",
+    "image": "images/news-materials.svg"
+  },
+  {
+    "title": "How to Make Your Parts Last Longer",
+    "description": "Service life depends a lot on design. A few simple tips on walls, fillets, and infill that help printed parts survive real use.",
+    "content": "A well-designed part can outlast the original it replaces. Strength in 3D printing comes from more than just the material — it comes from the way the part is shaped and printed.\n\nGive walls enough thickness. A part with thin walls flexes and breaks easily. Adding just a few extra millimetres of wall thickness dramatically increases strength for a small increase in print time.\n\nRound the corners. Sharp internal corners concentrate stress and become natural cracking points. Fillets (rounded corners) spread that stress and make the part far more durable under real loads.\n\nChoose the right infill. Lighter infill saves time and material, but for load-bearing parts a denser infill keeps the part stiff. As a rule of thumb: decorative items around 15%, functional parts 40%, and parts under heavy load up to 80%.\n\nPrint orientation matters. Parts are weaker between layers than along them. Whenever possible we rotate the model so the most stressed direction is printed along the layer lines, not across them.\n\nTell us what the part will be used for and we will build those protections into the model from the start.",
+    "date": "2026-07-22",
+    "image": "images/news-local.svg"
   }
 ]
