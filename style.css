@@ -80,6 +80,21 @@ body.dark input[type="number"] {
 
 .nav-sep { color: #475569; font-size: 0.9rem; pointer-events: none; user-select: none; }
 
+.main-nav a.nav-tab {
+  border: 1px solid #475569;
+  border-bottom: 1px solid #475569;
+  border-radius: 20px;
+  padding: 0.25rem 0.9rem;
+  margin-left: 0.15rem;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.main-nav a.nav-tab:hover, .main-nav a.nav-tab.active {
+  color: #fff;
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
 .topbar-right { display: flex; align-items: center; gap: 1rem; }
 
 .lang-switcher { position: relative; }
