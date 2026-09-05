@@ -2,6 +2,9 @@ const app = document.getElementById("app");
 let currentLang = ["en", "ru", "sah"].includes(localStorage.getItem("lang")) ? localStorage.getItem("lang") : "en";
 let translations = {};
 
+const NAV_SECTIONS = ["home", "services", "gallery", "news", "faq"];
+const SCROLL_ORDER = ["home", "services", "process", "stats", "why", "materials", "pricing", "gallery", "testimonials", "faq", "sizes", "map", "contact"];
+
 async function loadLang(lang) {
   const res = await fetch(`i18n/${lang}.json`);
   translations = await res.json();
@@ -40,9 +43,17 @@ async function loadJSON(path) {
   return res.json();
 }
 
-function setActiveNav(page) {
+function updateActiveNav() {
+  let current = "home";
+  for (const id of SCROLL_ORDER) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (el.getBoundingClientRect().top <= 140) {
+      if (NAV_SECTIONS.includes(id)) current = id;
+    }
+  }
   document.querySelectorAll(".main-nav a").forEach((a) => {
-    a.classList.toggle("active", a.dataset.page === page);
+    a.classList.toggle("active", a.dataset.page === current);
   });
 }
 
@@ -153,9 +164,9 @@ function updateThemeBtn(btn) {
   btn.textContent = document.body.classList.contains("dark") ? "☀" : "🌙";
 }
 
-/* ===== PAGE RENDERERS ===== */
+/* ===== SINGLE-PAGE RENDERER ===== */
 
-async function renderHome() {
+async function renderSite() {
   const services = await loadJSON("data/services.json");
   const social = await loadJSON("data/social.json");
   const promo = await loadJSON("data/promo.json");
@@ -163,6 +174,8 @@ async function renderHome() {
   const pricing = await loadJSON("data/pricing.json");
   const faq = await loadJSON("data/faq.json");
   const testimonials = await loadJSON("data/testimonials.json");
+  const gallery = await loadJSON("data/gallery.json");
+  const news = await loadJSON("data/news.json");
 
   const promoHtml = promo.active
     ? `<div class="promo-banner" id="promoBanner"><span>${promo.text}</span><button class="promo-close" onclick="document.getElementById('promoBanner').style.display='none'">✕</button></div>`
@@ -171,7 +184,7 @@ async function renderHome() {
   app.innerHTML = `
     ${promoHtml}
 
-    <div class="hero">
+    <div class="hero" id="home">
       <div class="hero-text">
         <h1>${t("hero.title")} <span>${t("hero.titleHighlight")}</span></h1>
         <p>${t("hero.subtitle")}</p>
@@ -183,7 +196,7 @@ async function renderHome() {
       <div class="hero-visual"><div class="hero-icon">🖨</div></div>
     </div>
 
-    <div class="services-section">
+    <div class="services-section" id="services">
       <h2 class="section-title">${t("services.title")}</h2>
       <p class="section-subtitle">${t("services.subtitle")}</p>
       <div class="service-grid">
@@ -198,7 +211,7 @@ async function renderHome() {
       </div>
     </div>
 
-    <div class="process-section">
+    <div class="process-section" id="process">
       <h2 class="section-title">${t("process.title")}</h2>
       <p class="section-subtitle">${t("process.subtitle")}</p>
       <div class="process-grid">
@@ -212,7 +225,7 @@ async function renderHome() {
       </div>
     </div>
 
-    <div class="stats-bar">
+    <div class="stats-bar" id="stats">
       ${[1, 2, 3, 4].map((i) => `
         <div class="stat-item">
           <div class="value">${t("stats.stat" + i + ".value")}</div>
@@ -221,7 +234,7 @@ async function renderHome() {
       `).join("")}
     </div>
 
-    <div class="why-section">
+    <div class="why-section" id="why">
       <h2 class="section-title">${t("why.title")}</h2>
       <p class="section-subtitle">${t("why.subtitle")}</p>
       <div class="why-grid">
@@ -235,7 +248,7 @@ async function renderHome() {
       </div>
     </div>
 
-    <div class="materials-section">
+    <div class="materials-section" id="materials">
       <h2 class="section-title">${t("materials.title")}</h2>
       <p class="section-subtitle">${t("materials.subtitle")}</p>
       <div class="materials-grid">
@@ -257,7 +270,7 @@ async function renderHome() {
       </div>
     </div>
 
-    <div class="pricing-section">
+    <div class="pricing-section" id="pricing">
       <h2 class="section-title">${t("pricing.title")}</h2>
       <p class="section-subtitle">${t("pricing.subtitle")}</p>
       <div class="pricing-box">
@@ -292,7 +305,20 @@ async function renderHome() {
       </div>
     </div>
 
-    <div class="testimonials-section">
+    <div class="gallery-section" id="gallery">
+      <h2 class="section-title">${t("gallery.title")}</h2>
+      <p class="section-subtitle">${t("gallery.subtitle")}</p>
+      <div class="gallery-grid">
+        ${gallery.map((item) => `
+          <div class="gallery-card">
+            ${item.image ? `<img src="${item.image}" alt="${item.title}">` : '<div style="height:180px;background:#e2e8f0"></div>'}
+            <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
+    <div class="testimonials-section" id="testimonials">
       <h2 class="section-title">${t("testimonials.title")}</h2>
       <p class="section-subtitle">${t("testimonials.subtitle")}</p>
       <div class="testimonials-grid">
@@ -306,7 +332,7 @@ async function renderHome() {
       </div>
     </div>
 
-    <div class="faq-section">
+    <div class="faq-section" id="faq">
       <h2 class="section-title">${t("faq.title")}</h2>
       <p class="section-subtitle">${t("faq.subtitle")}</p>
       <div class="faq-list">
@@ -321,7 +347,7 @@ async function renderHome() {
       </div>
     </div>
 
-    <div class="size-ref-section">
+    <div class="size-ref-section" id="sizes">
       <h2 class="section-title">${t("fileRef.title")}</h2>
       <p class="section-subtitle">${t("fileRef.subtitle")}</p>
       <div class="size-ref-grid">
@@ -331,13 +357,13 @@ async function renderHome() {
       </div>
     </div>
 
-    <div class="map-section">
+    <div class="map-section" id="map">
       <h2 class="section-title">${t("map.title")}</h2>
       <p class="section-subtitle">${t("map.subtitle")}</p>
       <div id="map-container" class="map-container"></div>
     </div>
 
-    <div class="contact-section">
+    <div class="contact-section" id="contact">
       <div class="cta-box">
         <h2>${t("cta.title")}</h2>
         <p>${t("cta.subtitle")}</p>
@@ -373,64 +399,6 @@ async function renderHome() {
   initRequestForm(social.contactEmail);
 }
 
-async function renderServices() {
-  const data = await loadJSON("data/services.json");
-  const social = await loadJSON("data/social.json");
-  app.innerHTML = `
-    <div style="padding:2rem 0">
-      <h2 class="section-title">${t("services.title")}</h2>
-      <p class="section-subtitle">${t("services.subtitle")}</p>
-      <div class="service-grid">
-        ${data.map((s, i) => `
-          <div class="service-card">
-            <div class="icon">${s.icon || ["⚙", "🔧", "🎁", "📐"][i]}</div>
-            <h3>${s.title}</h3>
-            <p>${s.description}</p>
-            <a href="${social.whatsapp}?text=${encodeURIComponent("Hi, I need help with: " + s.title)}" target="_blank" class="card-cta">${t("nav.quote")}</a>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `;
-}
-
-async function renderGallery() {
-  const data = await loadJSON("data/gallery.json");
-  app.innerHTML = `
-    <div class="gallery-section">
-      <h2 class="section-title">${t("gallery.title")}</h2>
-      <p class="section-subtitle">${t("gallery.subtitle")}</p>
-      <div class="gallery-grid">
-        ${data.map((item) => `
-          <div class="gallery-card">
-            ${item.image ? `<img src="${item.image}" alt="${item.title}">` : '<div style="height:180px;background:#e2e8f0"></div>'}
-            <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `;
-}
-
-async function renderNews() {
-  const data = await loadJSON("data/news.json");
-  app.innerHTML = `
-    <div class="news-section">
-      <h2 class="section-title">${t("news.title")}</h2>
-      <p class="section-subtitle">${t("news.subtitle")}</p>
-      <div class="news-grid">
-        ${data.map((item) => `
-          <div class="news-card">
-            <div class="date">${item.date}</div>
-            <h3>${item.title}</h3>
-            <p>${item.description}</p>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `;
-}
-
 async function renderFooter() {
   const social = await loadJSON("data/social.json");
   const links = [
@@ -444,15 +412,6 @@ async function renderFooter() {
       <div class="footer-links">${links}</div>
     </div>
   `;
-}
-
-const pages = { home: renderHome, services: renderServices, gallery: renderGallery, news: renderNews, contact: renderHome };
-
-async function navigate(page) {
-  const render = pages[page];
-  if (!render) return;
-  setActiveNav(page);
-  await render();
 }
 
 /* ===== INIT ===== */
@@ -470,9 +429,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateThemeBtn(themeBtn);
   });
 
-  const hash = location.hash.replace("#", "") || "home";
-  navigate(hash);
+  await renderSite();
+  updateActiveNav();
   renderFooter();
+
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => { updateActiveNav(); ticking = false; });
+      ticking = true;
+    }
+  }, { passive: true });
 
   document.getElementById("langToggle").addEventListener("click", () => {
     document.getElementById("langDropdown").classList.toggle("open");
@@ -482,7 +449,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (e.target.dataset.lang) {
       await loadLang(e.target.dataset.lang);
       document.getElementById("langDropdown").classList.remove("open");
-      navigate(location.hash.replace("#", "") || "home");
+      await renderSite();
+      updateActiveNav();
+      renderFooter();
     }
   });
 
@@ -491,8 +460,4 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("langDropdown").classList.remove("open");
     }
   });
-});
-
-window.addEventListener("hashchange", () => {
-  navigate(location.hash.replace("#", "") || "home");
 });

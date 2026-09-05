@@ -152,6 +152,20 @@ body.dark input[type="number"] {
 /* ===== MAIN ===== */
 main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100%; }
 
+.hero,
+.services-section,
+.process-section,
+.stats-bar,
+.why-section,
+.materials-section,
+.pricing-section,
+.gallery-section,
+.testimonials-section,
+.faq-section,
+.size-ref-section,
+.map-section,
+.contact-section { scroll-margin-top: 76px; }
+
 /* ===== HERO ===== */
 .hero { display: flex; align-items: center; gap: 3rem; padding: 4rem 0; }
 .hero-text { flex: 1; }
@@ -701,6 +715,10 @@ footer { background: var(--footer-bg); color: var(--footer-text); padding: 2rem 
 .footer-links a { color: var(--footer-text); font-size: 0.8rem; }
 .footer-links a:hover { color: #fff; }
 .footer-copy { font-size: 0.8rem; }
+
+@media (max-width: 900px) {
+  .main-nav { display: none; }
+}
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
