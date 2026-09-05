@@ -390,6 +390,7 @@ function initCatalogWorkbench(catalog, social) {
   let activePath = "";
   let sortMode = "pop";
   let selectedName = "";
+  let currentItem = null;
   const openSet = new Set();
 
   const fmt = (n) => (Number(n) || 0).toLocaleString("ru-RU");
@@ -509,13 +510,14 @@ function initCatalogWorkbench(catalog, social) {
         <div class="cat-price-box"><span>${t("catalog.modelPrice")}</span><strong>${fmt(item.priceModel)} ₽</strong></div>
       </div>
       <div class="details-actions">
-        <a class="btn-order" href="${social.whatsapp}?text=${encodeURIComponent("Hi, I want to order a print of: " + item.name + " (with delivery)")}" target="_blank">🖨 ${t("catalog.print")}</a>
-        <a class="btn-buy" href="${social.whatsapp}?text=${encodeURIComponent("Hi, I want to buy the 3D model: " + item.name)}" target="_blank">💾 ${t("catalog.buy")}</a>
+        <button type="button" class="btn-order" data-order="print">🖨 ${t("catalog.print")}</button>
+        <button type="button" class="btn-buy" data-order="buy">💾 ${t("catalog.buy")}</button>
       </div>`;
   }
 
   function selectItem(item) {
     selectedName = item.name;
+    currentItem = item;
     const items = currentItems();
     list.querySelectorAll(".catalog-list-row").forEach((row) => {
       row.classList.toggle("active", items[Number(row.dataset.i)] && items[Number(row.dataset.i)].name === item.name);
@@ -583,6 +585,18 @@ function initCatalogWorkbench(catalog, social) {
     renderList();
   });
 
+  details.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-order]");
+    if (!btn || !currentItem) return;
+    const type = btn.dataset.order;
+    const item = currentItem;
+    window.openOrderModal({
+      type,
+      name: item.name,
+      price: type === "print" ? item.pricePrint : item.priceModel,
+    });
+  });
+
   search.addEventListener("input", () => {
     query = search.value.trim();
     renderList();
@@ -592,90 +606,124 @@ function initCatalogWorkbench(catalog, social) {
   renderList();
 }
 
-function initCatalogRequestForm(email, materials, social) {
-  const form = document.getElementById("catalogRequestForm");
-  if (!form) return;
+function generateRequestId() {
+  const d = new Date();
+  const ym = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0");
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let suffix = "";
+  for (let i = 0; i < 4; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+  return `SP-${ym}-${suffix}`;
+}
 
-  const materialSelect = document.getElementById("reqMaterial");
-  const materialHint = document.getElementById("materialHint");
-  const fileInput = document.getElementById("reqFiles");
-  const fileList = document.getElementById("fileList");
-  const status = document.getElementById("catalogReqStatus");
-  const submitBtn = document.getElementById("catalogReqSubmit");
-  let files = [];
+function initOrderModal(email, social) {
+  initOrderModal._email = email;
+  initOrderModal._social = social;
+  if (document.getElementById("orderModal")) return;
 
-  function updateMaterialHint() {
-    const m = materials.find((x) => x.name === materialSelect.value);
-    if (m && materialHint) materialHint.textContent = t("catalog.reqMaterialHint") + ": " + m.bestFor;
+  const modal = document.createElement("div");
+  modal.id = "orderModal";
+  modal.className = "order-modal";
+  modal.hidden = true;
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.innerHTML = `
+    <div class="order-modal-backdrop" data-order-close></div>
+    <div class="order-modal-card">
+      <button class="order-modal-close" data-order-close aria-label="Close">✕</button>
+      <div class="order-modal-body" id="orderModalBody"></div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  function close() {
+    modal.hidden = true;
+    document.body.classList.remove("modal-open");
   }
-  updateMaterialHint();
-  materialSelect.addEventListener("change", updateMaterialHint);
 
-  function renderFiles() {
-    fileList.innerHTML = files.map((f, i) =>
-      `<span class="file-chip">📎 ${f.name}<button type="button" data-f="${i}" aria-label="${t("catalog.reqRemove")}">✕</button></span>`
-    ).join("");
-    fileList.querySelectorAll("button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        files.splice(Number(btn.dataset.f), 1);
-        renderFiles();
-      });
-    });
-  }
-
-  fileInput.addEventListener("change", () => {
-    for (const f of fileInput.files) {
-      if (!files.some((x) => x.name === f.name && x.size === f.size)) files.push(f);
-    }
-    fileInput.value = "";
-    renderFiles();
+  modal.querySelectorAll("[data-order-close]").forEach((el) => {
+    el.addEventListener("click", close);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.hidden) close();
   });
 
-  function generateRequestId() {
-    const d = new Date();
-    const ym = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0");
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let suffix = "";
-    for (let i = 0; i < 4; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
-    return `SP-${ym}-${suffix}`;
-  }
+  window._orderModalClose = close;
+}
 
-  function waText(values) {
-    return [
-      "New custom request",
-      "Request ID: " + values.requestId,
-      "Name: " + values.name,
-      "Contact: " + values.contact,
-      "For: " + (values.purpose || "-"),
-      "Material: " + values.material,
-      "Details:",
-      values.description,
-      "Files: " + (files.map((f) => f.name).join(", ") || "none"),
-    ].join("\n");
-  }
+window.openOrderModal = function (context) {
+  const email = initOrderModal._email;
+  const social = initOrderModal._social;
+  const modal = document.getElementById("orderModal");
+  const body = document.getElementById("orderModalBody");
+  if (!modal || !body) return;
+
+  const fmt = (n) => (Number(n) || 0).toLocaleString("ru-RU");
+  const purpose = context.type === "print" ? t("catalog.print") : context.type === "buy" ? t("catalog.buy") : t("catalog.requestTitle");
+  const title = context.name ? `${purpose}: ${context.name}` : purpose;
+
+  const itemCard = context.name ? `
+    <div class="order-item-card">
+      <strong>${escHtml(context.name)}</strong>
+      ${context.price ? `<span class="order-item-price">${fmt(context.price)} ₽</span>` : ""}
+    </div>` : "";
+
+  body.innerHTML = `
+    <h3 class="order-title">${escHtml(title)}</h3>
+    ${itemCard}
+    <form id="orderForm" novalidate>
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      <div class="order-field">
+        <label for="orderName">${t("catalog.reqName")}</label>
+        <input id="orderName" name="name" type="text" required>
+      </div>
+      <div class="order-field">
+        <label for="orderContact">${t("catalog.reqContact")}</label>
+        <input id="orderContact" name="contact" type="text" placeholder="${t("catalog.reqContactPlaceholder")}" required>
+      </div>
+      <div class="order-field">
+        <label for="orderMessage">${t("catalog.orderMessage")}</label>
+        <textarea id="orderMessage" name="message" rows="2" placeholder="${t("catalog.orderMessagePlaceholder")}"></textarea>
+      </div>
+      <button type="submit" class="btn-primary order-submit" id="orderSubmit">${t("catalog.reqSend")}</button>
+      <div class="request-status" id="orderStatus" hidden></div>
+    </form>`;
+
+  const form = body.querySelector("#orderForm");
+  const statusEl = body.querySelector("#orderStatus");
+  const submitBtn = body.querySelector("#orderSubmit");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = form.name.value.trim();
     const contact = form.contact.value.trim();
-    const description = form.description.value.trim();
-    if (!name || !contact || !description) {
-      status.hidden = false;
-      status.className = "request-status error";
-      status.textContent = t("request.required");
+    const message = form.message.value.trim();
+
+    if (!name || !contact) {
+      statusEl.hidden = false;
+      statusEl.className = "request-status error";
+      statusEl.textContent = t("request.required");
       return;
     }
 
     const requestId = generateRequestId();
     try { localStorage.setItem("lastRequestId", requestId); } catch (err) {}
 
-    const values = { requestId, name, contact, purpose: form.purpose.value.trim(), material: materialSelect.value, description };
-    const waLink = `${social.whatsapp}?text=${encodeURIComponent(waText(values))}`;
+    const purposeLabel = context.type === "print" ? "Order print" : context.type === "buy" ? "Buy model" : "Custom request";
+
+    const waLines = [
+      purposeLabel + (context.name ? ": " + context.name : ""),
+      context.price ? "Price: " + fmt(context.price) + " ₽" : "",
+      "Request ID: " + requestId,
+      "Name: " + name,
+      "Contact: " + contact,
+      message ? "Message: " + message : "",
+    ].filter(Boolean).join("\n");
+
+    const waLink = `${social.whatsapp}?text=${encodeURIComponent(waLines)}`;
     const handoff = `<a class="handoff" href="${waLink}" target="_blank">📲 ${t("catalog.reqWhatsapp")}</a>`;
 
-    status.hidden = false;
-    status.className = "request-status success";
-    status.innerHTML = `
+    statusEl.hidden = false;
+    statusEl.className = "request-status success";
+    statusEl.innerHTML = `
       <div class="request-id-block">
         <div class="request-id-label">${t("catalog.reqIdLabel")}</div>
         <div class="request-id-field">
@@ -688,7 +736,7 @@ function initCatalogRequestForm(email, materials, social) {
     submitBtn.disabled = true;
     submitBtn.textContent = t("catalog.reqSending");
 
-    const idCopy = status.querySelector("[data-copy-id]");
+    const idCopy = statusEl.querySelector("[data-copy-id]");
     if (idCopy) idCopy.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(idCopy.dataset.copyId);
@@ -696,7 +744,7 @@ function initCatalogRequestForm(email, materials, social) {
         setTimeout(() => { idCopy.textContent = t("catalog.reqIdCopy"); }, 2000);
       } catch (err) {
         const range = document.createRange();
-        range.selectNodeContents(status.querySelector(".request-id-value"));
+        range.selectNodeContents(statusEl.querySelector(".request-id-value"));
         const sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
@@ -709,14 +757,12 @@ function initCatalogRequestForm(email, materials, social) {
           method: "POST",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({
-            name,
-            contact,
-            purpose: form.purpose.value.trim(),
-            material: materialSelect.value,
-            description,
-            files: files.map((f) => f.name).join(", "),
             request_id: requestId,
-            _subject: `Custom model request ${requestId} - Suntar-Plastic (${name})`,
+            purpose: purposeLabel,
+            item: context.name || "",
+            price: context.price || "",
+            name, contact, message,
+            _subject: `Request ${requestId} - Suntar-Plastic (${name})`,
             _captcha: "false",
             _honey: form.querySelector('[name="_honey"]').value,
             _template: "table",
@@ -724,22 +770,22 @@ function initCatalogRequestForm(email, materials, social) {
         });
         const data = await res.json().catch(() => ({}));
         if (!(res.ok && data.success !== false)) {
-          status.className = "request-status error";
-          status.innerHTML = `${t("catalog.reqError")} ${handoff}`;
+          statusEl.className = "request-status error";
+          statusEl.innerHTML = `${t("catalog.reqError")} ${handoff}`;
         }
       } catch (err) {
-        status.className = "request-status error";
-        status.innerHTML = `${t("catalog.reqError")} ${handoff}`;
+        statusEl.className = "request-status error";
+        statusEl.innerHTML = `${t("catalog.reqError")} ${handoff}`;
       }
     }
 
     submitBtn.disabled = false;
     submitBtn.textContent = t("catalog.reqSend");
-    form.reset();
-    files = [];
-    renderFiles();
-    updateMaterialHint();
   });
+
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  body.querySelector("#orderName").focus({ preventScroll: true });
 }
 
 function updateThemeBtn(btn) {
@@ -1009,47 +1055,12 @@ async function renderSite() {
       </section>
 
       <section class="catalog-request" id="catalogRequest">
-        <h2 class="section-title">${t("catalog.requestTitle")}</h2>
-        <p class="section-subtitle">${t("catalog.requestSubtitle")}</p>
-        <div class="catalog-request-card">
-          <form id="catalogRequestForm" class="request-form" novalidate>
-            <div class="request-field">
-              <label for="reqNameInput">${t("catalog.reqName")}</label>
-              <input id="reqNameInput" name="name" type="text" required>
-            </div>
-            <div class="request-field">
-              <label for="reqContactInput">${t("catalog.reqContact")}</label>
-              <input id="reqContactInput" name="contact" type="text" placeholder="${t("catalog.reqContactPlaceholder")}" required>
-            </div>
-            <div class="request-field">
-              <label for="reqPurpose">${t("catalog.reqPurpose")}</label>
-              <input id="reqPurpose" name="purpose" type="text" placeholder="${t("catalog.reqPurposePlaceholder")}">
-            </div>
-            <div class="request-field">
-              <label for="reqMaterial">${t("catalog.reqMaterial")}</label>
-              <select id="reqMaterial" name="material">
-                ${materials.map((m) => `<option value="${m.name}">${m.icon} ${m.name}</option>`).join("")}
-              </select>
-              <div class="material-hint" id="materialHint"></div>
-              <details class="material-guide">
-                <summary>${t("catalog.materialGuide")}</summary>
-                ${materials.map((m) => `<div class="material-guide-row"><strong>${m.icon} ${m.name}</strong><span>${m.bestFor}</span></div>`).join("")}
-              </details>
-            </div>
-            <div class="request-field full">
-              <label for="reqDescription">${t("catalog.reqDescription")}</label>
-              <textarea id="reqDescription" name="description" rows="5" placeholder="${t("catalog.reqDescriptionPlaceholder")}" required></textarea>
-            </div>
-            <div class="request-field full">
-              <label for="reqFiles">${t("catalog.reqAttachments")}</label>
-              <input type="file" id="reqFiles" name="files" multiple accept=".stl,.obj,.3mf,.step,.stp,.png,.jpg,.jpeg,.webp">
-              <div class="file-list" id="fileList"></div>
-              <div class="material-hint">${t("catalog.reqAttachmentsHint")}</div>
-            </div>
-            <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
-            <button type="submit" class="btn-primary" id="catalogReqSubmit">${t("catalog.reqSend")}</button>
-            <div class="request-status" id="catalogReqStatus" hidden></div>
-          </form>
+        <div class="request-promo">
+          <div class="request-promo-text">
+            <h3>${t("catalog.requestTitle")}</h3>
+            <p>${t("catalog.requestSubtitle")}</p>
+          </div>
+          <button type="button" class="btn-primary" id="openCustomRequest">${t("catalog.orderStart")}</button>
         </div>
       </section>
     </div>
@@ -1064,8 +1075,12 @@ async function renderSite() {
   initNewsModal();
   initTestimonials();
   initCatalogWorkbench(catalog, social);
-  initCatalogRequestForm(social.contactEmail, materials, social);
+  initOrderModal(social.contactEmail, social);
   initRequestTracker(requests);
+
+  const customBtn = document.getElementById("openCustomRequest");
+  if (customBtn) customBtn.addEventListener("click", () => window.openOrderModal({ type: "custom" }));
+
   applyHash();
 }
 
