@@ -78,6 +78,8 @@ body.dark input[type="number"] {
 
 .main-nav a:hover, .main-nav a.active { color: #fff; border-bottom-color: var(--primary); }
 
+.nav-sep { color: #475569; font-size: 0.9rem; pointer-events: none; user-select: none; }
+
 .topbar-right { display: flex; align-items: center; gap: 1rem; }
 
 .lang-switcher { position: relative; }
