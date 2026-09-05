@@ -2,42 +2,54 @@
   {
     "name": "Cable Organizer",
     "description": "Desktop clip that keeps charging cables tidy in one place.",
-    "price": 350,
+    "category": "Desktop",
+    "pricePrint": 350,
+    "priceModel": 150,
     "icon": "🔌",
     "image": ""
   },
   {
     "name": "Phone Stand",
     "description": "Sturdy adjustable stand for desk or bedside use.",
-    "price": 400,
+    "category": "Desktop",
+    "pricePrint": 400,
+    "priceModel": 200,
     "icon": "📱",
     "image": ""
   },
   {
     "name": "Plant Pot",
     "description": "Geometric planter with drainage hole, in many colors.",
-    "price": 500,
+    "category": "Home",
+    "pricePrint": 500,
+    "priceModel": 250,
     "icon": "🪴",
     "image": ""
   },
   {
     "name": "Storage Box",
     "description": "Small parts organizer with snap-fit lid.",
-    "price": 450,
+    "category": "Storage",
+    "pricePrint": 450,
+    "priceModel": 200,
     "icon": "📦",
     "image": ""
   },
   {
     "name": "Key Holder",
     "description": "Wall-mounted holder for keys and small items.",
-    "price": 300,
+    "category": "Home",
+    "pricePrint": 300,
+    "priceModel": 150,
     "icon": "🔑",
     "image": ""
   },
   {
     "name": "Decor Snowflake",
     "description": "Lightweight ornament for winter decorations and gifts.",
-    "price": 250,
+    "category": "Decor",
+    "pricePrint": 250,
+    "priceModel": 100,
     "icon": "❄",
     "image": ""
   }

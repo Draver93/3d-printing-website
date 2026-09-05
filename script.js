@@ -2,8 +2,8 @@ const app = document.getElementById("app");
 let currentLang = ["en", "ru", "sah"].includes(localStorage.getItem("lang")) ? localStorage.getItem("lang") : "en";
 let translations = {};
 
-const NAV_SECTIONS = ["home", "services", "gallery", "news", "faq"];
-const SCROLL_ORDER = ["home", "services", "process", "stats", "why", "materials", "pricing", "gallery", "testimonials", "faq", "sizes", "map", "contact"];
+const NAV_SECTIONS = ["home", "services", "catalog", "gallery", "news", "faq"];
+const SCROLL_ORDER = ["home", "services", "catalog", "process", "stats", "why", "materials", "pricing", "gallery", "testimonials", "faq", "sizes", "map", "contact"];
 
 async function loadLang(lang) {
   const res = await fetch(`i18n/${lang}.json`);
@@ -249,20 +249,101 @@ function initTestimonials() {
   }, { passive: true });
 }
 
-function initPortfolio() {
-  const tabs = document.getElementById("portfolioTabs");
-  if (!tabs) return;
-  tabs.querySelectorAll(".portfolio-tab").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      tabs.querySelectorAll(".portfolio-tab").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      const kind = btn.dataset.kind;
-      const workPanel = document.getElementById("panel-work");
-      const modelsPanel = document.getElementById("panel-models");
-      if (workPanel) workPanel.hidden = kind !== "work";
-      if (modelsPanel) modelsPanel.hidden = kind !== "models";
+function initCatalog(catalog, social) {
+  const grid = document.getElementById("catalogGrid");
+  const search = document.getElementById("catalogSearch");
+  const chipsWrap = document.getElementById("catalogChips");
+  const empty = document.getElementById("catalogEmpty");
+  const modal = document.getElementById("catalogModal");
+  const content = document.getElementById("modalContent");
+  if (!grid || !search || !chipsWrap || !modal) return;
+
+  let query = "";
+  let activeCat = "";
+
+  const fmt = (n) => (Number(n) || 0).toLocaleString("ru-RU");
+
+  const cats = ["", ...new Set(catalog.map((i) => i.category).filter(Boolean))];
+  chipsWrap.innerHTML = cats.map((c) =>
+    `<button type="button" class="chip${c === activeCat ? " active" : ""}" data-cat="${c}">${c === "" ? t("catalog.all") : c}</button>`
+  ).join("");
+
+  function currentItems() {
+    const q = query.toLowerCase();
+    return catalog.filter((i) =>
+      (activeCat === "" || (i.category || "") === activeCat) &&
+      (!q || (i.name + " " + (i.description || "") + " " + (i.category || "")).toLowerCase().includes(q))
+    );
+  }
+
+  function cardHTML(item) {
+    return `
+      <div class="catalog-card" data-name="${item.name}" role="button" tabindex="0" aria-label="${item.name}">
+        ${item.image ? `<img class="catalog-photo" src="${item.image}" alt="${item.name}">` : `<div class="catalog-icon">${item.icon || "🛒"}</div>`}
+        <h3>${item.name}</h3>
+        <span class="catalog-cat">${item.category || ""}</span>
+        <div class="catalog-price">${t("catalog.printPrice")}: ${fmt(item.pricePrint)} ₽</div>
+      </div>`;
+  }
+
+  function renderGrid() {
+    const list = currentItems();
+    empty.hidden = list.length > 0;
+    grid.innerHTML = list.map(cardHTML).join("");
+    grid.querySelectorAll(".catalog-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const item = currentItems().find((i) => i.name === card.dataset.name);
+        if (item) openModal(item);
+      });
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); card.click(); }
+      });
     });
+  }
+
+  function openModal(item) {
+    content.innerHTML = `
+      <div class="modal-body">
+        ${item.image ? `<img class="modal-image" src="${item.image}" alt="${item.name}">` : `<div class="modal-icon">${item.icon || "🛒"}</div>`}
+        <h3>${item.name}</h3>
+        ${item.category ? `<div class="modal-cat">${item.category}</div>` : ""}
+        <p class="modal-desc">${item.description}</p>
+        <div class="modal-prices">
+          <div class="modal-price"><span>${t("catalog.printPrice")}</span><strong>${fmt(item.pricePrint)} ₽</strong></div>
+          <div class="modal-price"><span>${t("catalog.modelPrice")}</span><strong>${fmt(item.priceModel)} ₽</strong></div>
+        </div>
+        <div class="modal-actions">
+          <a class="btn-order" href="${social.whatsapp}?text=${encodeURIComponent("Hi, I want to order a print of: " + item.name + " (with delivery)")}" target="_blank">🖨 ${t("catalog.print")}</a>
+          <a class="btn-buy" href="${social.whatsapp}?text=${encodeURIComponent("Hi, I want to buy the 3D model: " + item.name)}" target="_blank">💾 ${t("catalog.buy")}</a>
+        </div>
+      </div>`;
+    modal.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  chipsWrap.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+    activeCat = chip.dataset.cat;
+    chipsWrap.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c === chip));
+    renderGrid();
   });
+
+  search.addEventListener("input", () => {
+    query = search.value.trim();
+    renderGrid();
+  });
+
+  document.getElementById("modalClose").addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) closeModal(); });
+
+  renderGrid();
 }
 
 function updateThemeBtn(btn) {
@@ -414,35 +495,33 @@ async function renderSite() {
     <div class="gallery-section" id="gallery">
       <h2 class="section-title">${t("gallery.title")}</h2>
       <p class="section-subtitle">${t("gallery.subtitle")}</p>
+      <div class="gallery-grid">
+        ${gallery.map((item) => `
+          <div class="gallery-card">
+            ${item.image ? `<img src="${item.image}" alt="${item.title}">` : '<div class="gallery-photo-placeholder">🖼</div>'}
+            <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
 
-      <div class="portfolio-tabs" id="portfolioTabs">
-        <button type="button" class="portfolio-tab active" data-kind="work">${t("portfolio.work")}</button>
-        <button type="button" class="portfolio-tab" data-kind="models">${t("portfolio.models")}</button>
+    <div class="catalog-section" id="catalog">
+      <h2 class="section-title">${t("catalog.title")}</h2>
+      <p class="section-subtitle">${t("catalog.subtitle")}</p>
+
+      <div class="catalog-controls">
+        <input type="search" id="catalogSearch" class="catalog-search" placeholder="${t("catalog.search")}">
+        <div class="catalog-chips" id="catalogChips"></div>
       </div>
 
-      <div class="portfolio-panel" id="panel-work">
-        <div class="gallery-grid">
-          ${gallery.map((item) => `
-            <div class="gallery-card">
-              ${item.image ? `<img src="${item.image}" alt="${item.title}">` : '<div class="gallery-photo-placeholder">🖼</div>'}
-              <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
-            </div>
-          `).join("")}
-        </div>
-      </div>
+      <div class="catalog-grid" id="catalogGrid"></div>
+      <div class="catalog-empty" id="catalogEmpty" hidden>${t("catalog.empty")}</div>
+    </div>
 
-      <div class="portfolio-panel" id="panel-models" hidden>
-        <div class="catalog-grid">
-          ${catalog.map((item) => `
-            <div class="catalog-card">
-              ${item.image ? `<img class="catalog-photo" src="${item.image}" alt="${item.name}">` : `<div class="catalog-icon">${item.icon || "🛒"}</div>`}
-              <h3>${item.name}</h3>
-              <p>${item.description}</p>
-              <div class="catalog-price">${item.price.toLocaleString("ru-RU")} ₽</div>
-              <a href="${social.whatsapp}?text=${encodeURIComponent("Hi, I want to order: " + item.name)}" target="_blank" class="btn-order">${t("portfolio.order")}</a>
-            </div>
-          `).join("")}
-        </div>
+    <div class="modal-overlay" id="catalogModal" hidden>
+      <div class="modal-dialog">
+        <button type="button" class="modal-close" id="modalClose" aria-label="${t("catalog.close")}">✕</button>
+        <div id="modalContent"></div>
       </div>
     </div>
 
@@ -535,7 +614,7 @@ async function renderSite() {
   initPricing(pricing);
   initRequestForm(social.contactEmail);
   initTestimonials();
-  initPortfolio();
+  initCatalog(catalog, social);
 }
 
 async function renderFooter() {
