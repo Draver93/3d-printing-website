@@ -713,7 +713,7 @@ window.openOrderModal = function (context) {
         <label for="orderMessage">${t("catalog.orderMessage")}</label>
         <textarea id="orderMessage" name="message" rows="2" placeholder="${t("catalog.orderMessagePlaceholder")}"></textarea>
       </div>
-      ${context.type !== "buy" ? `
+      ${!context.name ? `
       <div class="order-field">
         <label for="orderFiles">${t("catalog.reqAttachments")}</label>
         <input type="file" id="orderFiles" name="files" multiple accept=".stl,.obj,.3mf,.step,.stp,.png,.jpg,.jpeg,.webp">
