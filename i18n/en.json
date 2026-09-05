@@ -72,7 +72,9 @@
   },
   "testimonials": {
     "title": "Customer Reviews",
-    "subtitle": "What people in our area say about us."
+    "subtitle": "What people in our area say about us.",
+    "prev": "Previous review",
+    "next": "Next review"
   },
   "why": {
     "title": "Why Choose Us",

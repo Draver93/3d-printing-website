@@ -160,6 +160,60 @@ function initRequestForm(email) {
   });
 }
 
+function initTestimonials() {
+  const carousel = document.getElementById("testimonialsCarousel");
+  const track = document.getElementById("testimonialTrack");
+  if (!carousel || !track) return;
+
+  const slides = track.children.length;
+  const dotsWrap = document.getElementById("testimonialDots");
+  const prevBtn = carousel.querySelector(".carousel-prev");
+  const nextBtn = carousel.querySelector(".carousel-next");
+
+  if (slides <= 1) {
+    prevBtn.style.display = "none";
+    nextBtn.style.display = "none";
+    return;
+  }
+
+  let index = 0;
+  let timer = null;
+  const INTERVAL = 5000;
+
+  dotsWrap.innerHTML = Array.from({ length: slides }, (_, i) => `<span class="dot" data-i="${i}"></span>`).join("");
+  const dots = dotsWrap.querySelectorAll(".dot");
+
+  function go(i) {
+    index = (i + slides) % slides;
+    track.style.transform = `translateX(-${index * 100}%)`;
+    dots.forEach((d, j) => d.classList.toggle("active", j === index));
+  }
+
+  function nextSlide() { go(index + 1); }
+  function prevSlide() { go(index - 1); }
+
+  function start() { stop(); timer = setInterval(nextSlide, INTERVAL); }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+  start();
+  carousel.addEventListener("mouseenter", stop);
+  carousel.addEventListener("mouseleave", start);
+
+  prevBtn.addEventListener("click", () => { prevSlide(); start(); });
+  nextBtn.addEventListener("click", () => { nextSlide(); start(); });
+  dots.forEach((d) => d.addEventListener("click", () => { go(parseInt(d.dataset.i)); start(); }));
+
+  let touchStartX = null;
+  carousel.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  carousel.addEventListener("touchend", (e) => {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) (dx < 0 ? nextSlide() : prevSlide());
+    touchStartX = null;
+    start();
+  }, { passive: true });
+}
+
 function updateThemeBtn(btn) {
   btn.textContent = document.body.classList.contains("dark") ? "☀" : "🌙";
 }
@@ -321,14 +375,23 @@ async function renderSite() {
     <div class="testimonials-section" id="testimonials">
       <h2 class="section-title">${t("testimonials.title")}</h2>
       <p class="section-subtitle">${t("testimonials.subtitle")}</p>
-      <div class="testimonials-grid">
-        ${testimonials.map((r) => `
-          <div class="testimonial-card">
-            <div class="testimonial-rating">${ratingStars(r.rating)}</div>
-            <p class="testimonial-text">"${r.text}"</p>
-            <div class="testimonial-author">${r.name} · ${r.location}</div>
+      <div class="carousel" id="testimonialsCarousel">
+        <button type="button" class="carousel-arrow carousel-prev" aria-label="${t("testimonials.prev")}">❮</button>
+        <div class="carousel-viewport">
+          <div class="carousel-track" id="testimonialTrack">
+            ${testimonials.map((r) => `
+              <div class="testimonial-slide">
+                <div class="testimonial-card">
+                  <div class="testimonial-rating">${ratingStars(r.rating)}</div>
+                  <p class="testimonial-text">"${r.text}"</p>
+                  <div class="testimonial-author">${r.name} · ${r.location}</div>
+                </div>
+              </div>
+            `).join("")}
           </div>
-        `).join("")}
+        </div>
+        <button type="button" class="carousel-arrow carousel-next" aria-label="${t("testimonials.next")}">❯</button>
+        <div class="carousel-dots" id="testimonialDots"></div>
       </div>
     </div>
 
@@ -397,6 +460,7 @@ async function renderSite() {
   setTimeout(initMap, 100);
   initPricing(pricing);
   initRequestForm(social.contactEmail);
+  initTestimonials();
 }
 
 async function renderFooter() {
