@@ -907,10 +907,15 @@ main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100
   gap: 0.35rem;
   flex: 1;
   min-width: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
   font-size: 0.8rem;
   color: var(--text-muted);
 }
+
+.catalog-crumbs::-webkit-scrollbar { display: none; }
 
 .crumb-link {
   border: none;
