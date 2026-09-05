@@ -3,7 +3,7 @@ let currentLang = ["en", "ru", "sah"].includes(localStorage.getItem("lang")) ? l
 let translations = {};
 
 const NAV_SECTIONS = ["home", "services", "catalog", "gallery", "news", "faq"];
-const SCROLL_ORDER = ["home", "stats", "gallery", "services", "process", "why", "materials", "pricing", "news", "testimonials", "faq", "sizes", "map", "contact"];
+const SCROLL_ORDER = ["home", "stats", "gallery", "process", "news", "testimonials", "faq", "sizes", "map", "contact"];
 let currentView = "home";
 
 async function loadLang(lang) {
@@ -111,34 +111,6 @@ function initMap() {
     attribution: "&copy; OpenStreetMap"
   }).addTo(map);
   L.marker([62.18, 117.63]).addTo(map).bindPopup("Suntar, Yakutia");
-}
-
-function initPricing(pricing) {
-  const calcBtn = document.getElementById("calcBtn");
-  const weightInput = document.getElementById("weightInput");
-  const materialSelect = document.getElementById("materialSelect");
-  const modelingNo = document.getElementById("modelingNo");
-  const modelingYes = document.getElementById("modelingYes");
-  const result = document.getElementById("pricingResult");
-  const totalEl = document.getElementById("pricingTotal");
-  let needsModeling = false;
-
-  modelingNo.onclick = () => { needsModeling = false; modelingNo.classList.add("active"); modelingYes.classList.remove("active"); };
-  modelingYes.onclick = () => { needsModeling = true; modelingYes.classList.add("active"); modelingNo.classList.remove("active"); };
-
-  calcBtn.onclick = () => {
-    const weight = Math.max(1, parseInt(weightInput.value) || 50);
-    const pricePerGram = parseInt(materialSelect.value);
-    const materialCost = weight * pricePerGram;
-    const total = pricing.basePrice + materialCost + (needsModeling ? pricing.modelingFee : 0);
-    totalEl.innerHTML = `<span class="price-total-label">${t("pricing.totalLabel")}</span>` +
-      `<span class="price-value">${total.toLocaleString("ru-RU")} ₽</span>` +
-      `<span class="price-breakdown">${pricing.basePrice.toLocaleString("ru-RU")} ₽ ${t("pricing.oneTime")}` +
-      ` + ${materialCost.toLocaleString("ru-RU")} ₽ (${weight} g \u00d7 ${pricePerGram} ₽ ${t("pricing.perGram")})` +
-      (needsModeling ? ` + ${pricing.modelingFee.toLocaleString("ru-RU")} ₽ ${t("pricing.modeling")}` : "") +
-      `</span>`;
-    result.classList.add("has-result");
-  };
 }
 
 function initTestimonials() {
@@ -465,11 +437,9 @@ function updateThemeBtn(btn) {
 /* ===== SINGLE-PAGE RENDERER ===== */
 
 async function renderSite() {
-  const services = await loadJSON("data/services.json");
   const social = await loadJSON("data/social.json");
   const promo = await loadJSON("data/promo.json");
   const materials = await loadJSON("data/materials.json");
-  const pricing = await loadJSON("data/pricing.json");
   const faq = await loadJSON("data/faq.json");
   const testimonials = await loadJSON("data/testimonials.json");
   const gallery = await loadJSON("data/gallery.json");
@@ -538,92 +508,6 @@ async function renderSite() {
       <h2>${t("ctaCatalog.title")}</h2>
       <p>${t("ctaCatalog.text")}</p>
       <a href="#catalog-request" class="btn-primary btn-band">${t("ctaCatalog.button")}</a>
-    </div>
-
-    <div class="services-section" id="services">
-      <h2 class="section-title">${t("services.title")}</h2>
-      <p class="section-subtitle">${t("services.subtitle")}</p>
-      <div class="service-grid">
-        ${services.map((s, i) => `
-          <div class="service-card">
-            <div class="icon">${s.icon || ["⚙", "🔧", "🎁", "📐"][i]}</div>
-            <h3>${s.title}</h3>
-            <p>${s.description}</p>
-            <a href="${social.whatsapp}?text=${encodeURIComponent("Hi, I need: " + s.title)}" target="_blank" class="card-cta">${t("nav.quote")}</a>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-
-    <div class="why-section" id="why">
-      <h2 class="section-title">${t("why.title")}</h2>
-      <p class="section-subtitle">${t("why.subtitle")}</p>
-      <div class="why-grid">
-        ${[1, 2, 3].map((i) => `
-          <div class="why-card">
-            <div class="icon">${["⚡", "💰", "🤝"][i - 1]}</div>
-            <h4>${t("why.point" + i + ".title")}</h4>
-            <p>${t("why.point" + i + ".desc")}</p>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-
-    <div class="materials-section" id="materials">
-      <h2 class="section-title">${t("materials.title")}</h2>
-      <p class="section-subtitle">${t("materials.subtitle")}</p>
-      <div class="materials-grid">
-        ${materials.map((m) => `
-          <div class="material-card ${m.recommended ? "recommended" : ""}">
-            <div class="material-header">
-              <span class="material-icon">${m.icon}</span>
-              <h3>${m.name}</h3>
-              ${m.recommended ? `<span class="badge-rec">${t("materials.recommended")}</span>` : ""}
-            </div>
-            <div class="material-bars">
-              <div class="bar-row"><span>${t("materials.strength")}</span><div class="bar"><div class="bar-fill" style="width:${m.strength * 20}%"></div></div></div>
-              <div class="bar-row"><span>${t("materials.heatResistance")}</span><div class="bar"><div class="bar-fill" style="width:${m.heatResistance * 20}%"></div></div></div>
-              <div class="bar-row"><span>${t("materials.flexibility")}</span><div class="bar"><div class="bar-fill" style="width:${m.flexibility * 20}%"></div></div></div>
-            </div>
-            <p class="material-best">${t("materials.bestFor")}: ${m.bestFor}</p>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-
-    <div class="pricing-section" id="pricing">
-      <h2 class="section-title">${t("pricing.title")}</h2>
-      <p class="section-subtitle">${t("pricing.subtitle")}</p>
-      <div class="pricing-box">
-        <div class="pricing-form">
-          <div class="pricing-field">
-            <label>${t("pricing.weightLabel")}</label>
-            <input type="number" id="weightInput" value="50" min="1" max="5000">
-          </div>
-          <div class="pricing-field">
-            <label>${t("pricing.materialLabel")}</label>
-            <select id="materialSelect">
-              ${pricing.materials.map((m) => `<option value="${m.pricePerGram}">${m.name}</option>`).join("")}
-            </select>
-          </div>
-          <div class="pricing-field">
-            <label>${t("pricing.modelingLabel")}</label>
-            <div class="pricing-toggle">
-              <button type="button" id="modelingNo" class="pricing-toggle-btn active">${t("pricing.no")}</button>
-              <button type="button" id="modelingYes" class="pricing-toggle-btn">${t("pricing.yes")}</button>
-            </div>
-          </div>
-          <button type="button" class="btn-primary" id="calcBtn">${t("pricing.estimateBtn")}</button>
-        </div>
-        <div class="pricing-result" id="pricingResult">
-          <div class="pricing-result-title">${t("pricing.resultTitle")}</div>
-          <div class="pricing-total" id="pricingTotal"><span class="price-hint">${t("pricing.hint")}</span></div>
-        </div>
-      </div>
-      <div class="pricing-notes">
-        <h4>${t("pricing.notesTitle")}</h4>
-        <ul>${pricing.notes.map((n) => `<li>${n}</li>`).join("")}</ul>
-      </div>
     </div>
 
     <div class="news-section" id="news">
