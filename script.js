@@ -713,12 +713,13 @@ window.openOrderModal = function (context) {
         <label for="orderMessage">${t("catalog.orderMessage")}</label>
         <textarea id="orderMessage" name="message" rows="2" placeholder="${t("catalog.orderMessagePlaceholder")}"></textarea>
       </div>
+      ${context.type !== "buy" ? `
       <div class="order-field">
         <label for="orderFiles">${t("catalog.reqAttachments")}</label>
         <input type="file" id="orderFiles" name="files" multiple accept=".stl,.obj,.3mf,.step,.stp,.png,.jpg,.jpeg,.webp">
         <div class="file-list" id="orderFileList"></div>
         <div class="material-hint">${t("catalog.reqAttachmentsHint")}</div>
-      </div>
+      </div>` : ""}
       <button type="submit" class="btn-primary order-submit" id="orderSubmit">${t("catalog.reqSend")}</button>
       <div class="request-status" id="orderStatus" hidden></div>
     </form>`;
@@ -731,6 +732,7 @@ window.openOrderModal = function (context) {
   let files = [];
 
   function renderFiles() {
+    if (!fileListEl) return;
     fileListEl.innerHTML = files.map((f, i) =>
       `<span class="file-chip">📎 ${escHtml(f.name)}<button type="button" data-f="${i}" aria-label="${t("catalog.reqRemove")}">✕</button></span>`
     ).join("");
@@ -742,13 +744,15 @@ window.openOrderModal = function (context) {
     });
   }
 
-  fileInput.addEventListener("change", () => {
-    for (const f of fileInput.files) {
-      if (!files.some((x) => x.name === f.name && x.size === f.size)) files.push(f);
-    }
-    fileInput.value = "";
-    renderFiles();
-  });
+  if (fileInput) {
+    fileInput.addEventListener("change", () => {
+      for (const f of fileInput.files) {
+        if (!files.some((x) => x.name === f.name && x.size === f.size)) files.push(f);
+      }
+      fileInput.value = "";
+      renderFiles();
+    });
+  }
 
   function lockForm() {
     form.querySelectorAll("input, textarea, .file-list button").forEach((el) => { el.disabled = true; });
