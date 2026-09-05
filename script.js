@@ -165,12 +165,13 @@ function initTestimonials() {
   const track = document.getElementById("testimonialTrack");
   if (!carousel || !track) return;
 
-  const slides = track.children.length;
+  const slides = Array.from(track.children);
+  const total = slides.length;
   const dotsWrap = document.getElementById("testimonialDots");
   const prevBtn = carousel.querySelector(".carousel-prev");
   const nextBtn = carousel.querySelector(".carousel-next");
 
-  if (slides <= 1) {
+  if (total <= 1) {
     prevBtn.style.display = "none";
     nextBtn.style.display = "none";
     return;
@@ -178,15 +179,35 @@ function initTestimonials() {
 
   let index = 0;
   let timer = null;
-  const INTERVAL = 5000;
+  const INTERVAL = 4000;
 
-  dotsWrap.innerHTML = Array.from({ length: slides }, (_, i) => `<span class="dot" data-i="${i}"></span>`).join("");
-  const dots = dotsWrap.querySelectorAll(".dot");
+  function perView() {
+    return Math.max(1, Math.round(track.clientWidth / (slides[0].offsetWidth || 1)));
+  }
+
+  function maxStep() {
+    return Math.max(1, total - perView());
+  }
+
+  function updateDots() {
+    const d = dotsWrap.querySelectorAll(".dot");
+    d.forEach((el, j) => el.classList.toggle("active", j === index));
+  }
+
+  function buildDots() {
+    dotsWrap.innerHTML = Array.from({ length: maxStep() }, (_, i) => `<span class="dot" data-i="${i}"></span>`).join("");
+    dotsWrap.querySelectorAll(".dot").forEach((d) => d.addEventListener("click", () => { go(parseInt(d.dataset.i)); start(); }));
+    updateDots();
+  }
+
+  function apply() {
+    track.style.transform = `translateX(-${index * (100 / perView())}%)`;
+    updateDots();
+  }
 
   function go(i) {
-    index = (i + slides) % slides;
-    track.style.transform = `translateX(-${index * 100}%)`;
-    dots.forEach((d, j) => d.classList.toggle("active", j === index));
+    index = ((i % maxStep()) + maxStep()) % maxStep();
+    apply();
   }
 
   function nextSlide() { go(index + 1); }
@@ -195,13 +216,27 @@ function initTestimonials() {
   function start() { stop(); timer = setInterval(nextSlide, INTERVAL); }
   function stop() { if (timer) { clearInterval(timer); timer = null; } }
 
+  if (total <= perView()) {
+    prevBtn.style.display = "none";
+    nextBtn.style.display = "none";
+    return;
+  }
+
+  buildDots();
+  go(0);
   start();
+
   carousel.addEventListener("mouseenter", stop);
   carousel.addEventListener("mouseleave", start);
 
   prevBtn.addEventListener("click", () => { prevSlide(); start(); });
   nextBtn.addEventListener("click", () => { nextSlide(); start(); });
-  dots.forEach((d) => d.addEventListener("click", () => { go(parseInt(d.dataset.i)); start(); }));
+
+  window.addEventListener("resize", () => {
+    index = Math.min(index, Math.max(0, total - perView()));
+    buildDots();
+    apply();
+  });
 
   let touchStartX = null;
   carousel.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
