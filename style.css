@@ -478,7 +478,7 @@ main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100
 /* ===== FAQ ===== */
 .faq-section { padding: 3rem 0; }
 
-.faq-list { max-width: 700px; }
+.faq-list { width: 100%; }
 
 .faq-item { border-bottom: 1px solid var(--border); }
 
@@ -536,6 +536,9 @@ main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100
   border-radius: 8px;
   border: 1px solid var(--border);
   overflow: hidden;
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
 }
 
 /* ===== GALLERY ===== */
@@ -619,8 +622,8 @@ main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100
 
 /* ===== REQUEST FORM ===== */
 .request-card {
-  max-width: 640px;
-  margin: 3rem auto 0;
+  width: 100%;
+  margin: 3rem 0 0;
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -631,7 +634,9 @@ main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100
 .request-card h2 { font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 0.5rem; }
 .request-card > p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.75rem; line-height: 1.5; }
 
-.request-form { display: flex; flex-direction: column; gap: 1.25rem; text-align: left; }
+.request-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; text-align: left; }
+
+.request-field.full { grid-column: 1 / -1; }
 
 .request-field label {
   display: block;
@@ -665,7 +670,8 @@ main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100
 }
 
 .request-form .btn-primary {
-  align-self: center;
+  grid-column: 1 / -1;
+  justify-self: center;
   padding: 0.7rem 2.25rem;
   border: none;
   border-radius: 6px;
@@ -677,6 +683,7 @@ main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100
 .request-form .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .request-status {
+  grid-column: 1 / -1;
   padding: 0.75rem 1rem;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -706,6 +713,7 @@ footer { background: var(--footer-bg); color: var(--footer-text); padding: 2rem 
   .main-nav { display: none; }
   .footer-inner { flex-direction: column; gap: 1rem; }
   .pricing-box { grid-template-columns: 1fr; }
+  .request-form { grid-template-columns: 1fr; }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {

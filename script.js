@@ -356,7 +356,7 @@ async function renderHome() {
             <label for="reqContact">${t("request.contact")}</label>
             <input id="reqContact" name="contact" type="text" required>
           </div>
-          <div class="request-field">
+          <div class="request-field full">
             <label for="reqMessage">${t("request.message")}</label>
             <textarea id="reqMessage" name="message" rows="4" required></textarea>
           </div>
