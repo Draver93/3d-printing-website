@@ -28,5 +28,35 @@
     "title": "Gear Assembly",
     "description": "Functional printed gears for a DIY project.",
     "image": ""
+  },
+  {
+    "title": "Wall Hook",
+    "description": "Heavy-duty coat hook with two mounting points.",
+    "image": ""
+  },
+  {
+    "title": "Keyboard Wrist Rest",
+    "description": "Ergonomic wrist support printed in soft TPU.",
+    "image": ""
+  },
+  {
+    "title": "Cable Clip for Desk",
+    "description": "Self-adhesive clip that keeps cables off the floor.",
+    "image": ""
+  },
+  {
+    "title": "Mini Vase",
+    "description": "Spiral-design vase printed as a single continuous wall.",
+    "image": ""
+  },
+  {
+    "title": "Hobby Engine Model",
+    "description": "Scale model engine with rotating internal parts.",
+    "image": ""
+  },
+  {
+    "title": "Instructional Anatomy Model",
+    "description": "Educational skeleton hand model for biology classes.",
+    "image": ""
   }
 ]

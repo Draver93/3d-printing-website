@@ -208,6 +208,38 @@ function initTestimonials() {
   }, { passive: true });
 }
 
+function initGalleryPaging(gallery) {
+  const grid = document.getElementById("galleryGrid");
+  const prevBtn = document.getElementById("galleryPrev");
+  const nextBtn = document.getElementById("galleryNext");
+  const info = document.getElementById("galleryPageInfo");
+  if (!grid || !prevBtn || !nextBtn || !info) return;
+
+  const PER_PAGE = 6;
+  let page = 0;
+  const pages = Math.max(1, Math.ceil(gallery.length / PER_PAGE));
+
+  function cardHTML(item) {
+    return `
+      <div class="gallery-card">
+        ${item.image ? `<img src="${item.image}" alt="${item.title}" loading="lazy">` : '<div class="gallery-photo-placeholder">🖼</div>'}
+        <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
+      </div>`;
+  }
+
+  function render() {
+    grid.innerHTML = gallery.slice(page * PER_PAGE, (page + 1) * PER_PAGE).map(cardHTML).join("");
+    prevBtn.disabled = page === 0;
+    nextBtn.disabled = page >= pages - 1;
+    info.textContent = `${page + 1} / ${pages}`;
+  }
+
+  prevBtn.addEventListener("click", () => { page = Math.max(0, page - 1); render(); });
+  nextBtn.addEventListener("click", () => { page = Math.min(pages - 1, page + 1); render(); });
+
+  render();
+}
+
 function initNewsCarousel() {
   const carousel = document.getElementById("newsCarousel");
   const track = document.getElementById("newsTrack");
@@ -609,13 +641,11 @@ async function renderSite() {
     <div class="gallery-section" id="gallery">
       <h2 class="section-title">${t("gallery.title")}</h2>
       <p class="section-subtitle">${t("gallery.subtitle")}</p>
-      <div class="gallery-grid">
-        ${gallery.map((item) => `
-          <div class="gallery-card">
-            ${item.image ? `<img src="${item.image}" alt="${item.title}">` : '<div class="gallery-photo-placeholder">🖼</div>'}
-            <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
-          </div>
-        `).join("")}
+      <div class="gallery-grid" id="galleryGrid"></div>
+      <div class="gallery-pager">
+        <button type="button" class="gallery-page-btn" id="galleryPrev" aria-label="${t("gallery.prev")}">❮</button>
+        <span class="gallery-page-info" id="galleryPageInfo"></span>
+        <button type="button" class="gallery-page-btn" id="galleryNext" aria-label="${t("gallery.next")}">❯</button>
       </div>
     </div>
 
@@ -810,6 +840,7 @@ async function renderSite() {
 
   setTimeout(initMap, 100);
   window.newsData = news;
+  initGalleryPaging(gallery);
   initNewsCarousel();
   initNewsModal();
   initTestimonials();

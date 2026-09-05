@@ -73,7 +73,9 @@
   },
   "gallery": {
     "title": "Gallery",
-    "subtitle": "A preview of projects we've printed for our customers."
+    "subtitle": "A preview of projects we've printed for our customers.",
+    "prev": "Previous photos",
+    "next": "Next photos"
   },
   "catalog": {
     "title": "Catalog",
