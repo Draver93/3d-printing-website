@@ -90,14 +90,15 @@
   },
   "catalog": {
     "title": "Catalog",
-    "subtitle": "Ready-to-print models. Preview a model, order a print with delivery, or buy the model file itself.",
+    "subtitle": "Browse ready-to-print models. Select one to preview.",
     "search": "Search models...",
     "all": "All",
     "print": "Order Print",
     "buy": "Buy Model",
     "printPrice": "Print",
     "modelPrice": "3D Model",
-    "close": "Close",
+    "select": "Select a model from the catalog",
+    "no3d": "No 3D preview available for this model yet.",
     "empty": "No models match your search."
   },
   "news": {

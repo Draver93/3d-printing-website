@@ -21,6 +21,7 @@ const SCHEMAS = {
       { key: "category", label: "Category", type: "text" },
       { key: "pricePrint", label: "Print price (₽)", type: "number" },
       { key: "priceModel", label: "Model price (₽)", type: "number" },
+      { key: "model", label: "3D model file (GLB/GLTF URL)", type: "text" },
       { key: "icon", label: "Icon (emoji)", type: "text" },
       { key: "image", label: "Image URL (optional)", type: "text" },
     ] },
