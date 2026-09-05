@@ -65,6 +65,7 @@ const SCHEMAS = {
       { key: "whatsapp", label: "WhatsApp URL", type: "text" },
       { key: "instagram", label: "Instagram URL", type: "text" },
       { key: "telegram", label: "Telegram URL", type: "text" },
+      { key: "contactEmail", label: "Contact email (for form)", type: "text" },
     ] },
 };
 

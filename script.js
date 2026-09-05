@@ -89,6 +89,66 @@ function initPricing(pricing) {
   };
 }
 
+function initRequestForm(email) {
+  const form = document.getElementById("requestForm");
+  if (!form) return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const status = document.getElementById("reqStatus");
+    const btn = document.getElementById("reqSubmit");
+    const name = form.name.value.trim();
+    const contact = form.contact.value.trim();
+    const message = form.message.value.trim();
+    const honey = form.querySelector('[name="_honey"]').value;
+
+    if (!name || !contact || !message) {
+      status.hidden = false;
+      status.className = "request-status error";
+      status.textContent = t("request.required");
+      return;
+    }
+
+    status.hidden = false;
+    if (!email) {
+      status.className = "request-status error";
+      status.textContent = t("request.error");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = t("request.sending");
+    try {
+      const res = await fetch("https://formsubmit.co/ajax/" + email, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          name,
+          contact,
+          message,
+          _subject: `New request - Suntar-Plastic (${name})`,
+          _captcha: "false",
+          _honey: honey,
+          _template: "table",
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success !== false) {
+        status.className = "request-status success";
+        status.textContent = t("request.success");
+        form.reset();
+      } else {
+        status.className = "request-status error";
+        status.textContent = t("request.error");
+      }
+    } catch (err) {
+      status.className = "request-status error";
+      status.textContent = t("request.error");
+    }
+    btn.disabled = false;
+    btn.textContent = t("request.send");
+  });
+}
+
 function updateThemeBtn(btn) {
   btn.textContent = document.body.classList.contains("dark") ? "☀" : "🌙";
 }
@@ -283,11 +343,34 @@ async function renderHome() {
         <p>${t("cta.subtitle")}</p>
         <a href="${social.whatsapp}" target="_blank" class="btn-whatsapp">💬 WhatsApp</a>
       </div>
+
+      <div class="request-card">
+        <h2>${t("request.title")}</h2>
+        <p>${t("request.subtitle")}</p>
+        <form id="requestForm" class="request-form" novalidate>
+          <div class="request-field">
+            <label for="reqName">${t("request.name")}</label>
+            <input id="reqName" name="name" type="text" required>
+          </div>
+          <div class="request-field">
+            <label for="reqContact">${t("request.contact")}</label>
+            <input id="reqContact" name="contact" type="text" required>
+          </div>
+          <div class="request-field">
+            <label for="reqMessage">${t("request.message")}</label>
+            <textarea id="reqMessage" name="message" rows="4" required></textarea>
+          </div>
+          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+          <button type="submit" class="btn-primary" id="reqSubmit">${t("request.send")}</button>
+          <div class="request-status" id="reqStatus" hidden></div>
+        </form>
+      </div>
     </div>
   `;
 
   setTimeout(initMap, 100);
   initPricing(pricing);
+  initRequestForm(social.contactEmail);
 }
 
 async function renderServices() {
