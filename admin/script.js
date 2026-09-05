@@ -80,6 +80,14 @@ const SCHEMAS = {
       { key: "telegram", label: "Telegram URL", type: "text" },
       { key: "contactEmail", label: "Contact email (for form)", type: "text" },
     ] },
+  requests: { path: "data/requests.json", label: "Request Queue", array: true,
+    fields: [
+      { key: "id", label: "Request ID", type: "text" },
+      { key: "name", label: "Customer / request name", type: "text" },
+      { key: "status", label: "Status", type: "select", options: ["received", "printing", "ready", "done", "cancelled", "declined"] },
+      { key: "updatedAt", label: "Updated (date)", type: "date" },
+      { key: "note", label: "Note (shown to customer)", type: "textarea" },
+    ] },
 };
 
 let currentType = null;
@@ -142,6 +150,7 @@ function fieldInput(field, value) {
     case "checkbox": return `<input type="checkbox" name="${field.key}" ${value ? "checked" : ""}>`;
     case "date": return `<input type="date" name="${field.key}" value="${value}">`;
     case "number": return `<input type="number" name="${field.key}" value="${value}" ${field.min ? `min="${field.min}"` : ""} ${field.max ? `max="${field.max}"` : ""}>`;
+    case "select": return `<select name="${field.key}">${(field.options || []).map((o) => `<option value="${o}" ${String(value) === o ? "selected" : ""}>${o}</option>`).join("")}</select>`;
     default: return `<input type="text" name="${field.key}" value="${escapeHtml(value)}">`;
   }
 }

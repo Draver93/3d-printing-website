@@ -5,6 +5,7 @@
     "gallery": "Gallery",
     "news": "News",
     "faq": "FAQ",
+    "track": "Track Request",
     "quote": "Request a Model"
   },
   "hero": {
@@ -58,6 +59,22 @@
     "title": "Frequently Asked Questions",
     "subtitle": "Answers to common questions about our service."
   },
+  "track": {
+    "title": "Track Your Request",
+    "subtitle": "Enter the request ID you received when ordering to check its current status.",
+    "inputPlaceholder": "e.g. SP-2608-K2M7",
+    "button": "Check status",
+    "updated": "Updated",
+    "notFound": "No request found with this ID. Double-check the ID and try again.",
+    "status": {
+      "received": "Received",
+      "printing": "Printing",
+      "ready": "Ready for pickup",
+      "done": "Completed",
+      "cancelled": "Cancelled",
+      "declined": "Declined"
+    }
+  },
   "testimonials": {
     "title": "Customer Reviews",
     "subtitle": "What people in our area say about us.",
@@ -108,7 +125,11 @@
     "reqSending": "Sending...",
     "reqSuccess": "Request collected. Send the details and files to us on WhatsApp:",
     "reqError": "Could not send the email, but your request is ready:",
-    "reqWhatsapp": "Send via WhatsApp"
+    "reqWhatsapp": "Send via WhatsApp",
+    "reqIdLabel": "Your request ID",
+    "reqIdCopy": "Copy",
+    "reqIdCopied": "Copied!",
+    "reqIdHint": "Save this ID — you can check your request status on the {track}Track your request{/track} page."
   },
   "news": {
     "title": "News & Tips",

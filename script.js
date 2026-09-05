@@ -2,8 +2,8 @@ const app = document.getElementById("app");
 let currentLang = ["en", "ru", "sah"].includes(localStorage.getItem("lang")) ? localStorage.getItem("lang") : "en";
 let translations = {};
 
-const NAV_SECTIONS = ["home", "catalog", "gallery", "news", "faq"];
-const SCROLL_ORDER = ["home", "stats", "gallery", "process", "news", "testimonials", "faq", "map", "contact"];
+const NAV_SECTIONS = ["home", "catalog", "gallery", "news", "faq", "track"];
+const SCROLL_ORDER = ["home", "stats", "gallery", "process", "news", "testimonials", "faq", "track", "map", "contact"];
 let currentView = "home";
 
 async function loadLang(lang) {
@@ -523,9 +523,19 @@ function initCatalogRequestForm(email, materials, social) {
     renderFiles();
   });
 
+  function generateRequestId() {
+    const d = new Date();
+    const ym = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0");
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let suffix = "";
+    for (let i = 0; i < 4; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+    return `SP-${ym}-${suffix}`;
+  }
+
   function waText(values) {
     return [
       "New custom request",
+      "Request ID: " + values.requestId,
       "Name: " + values.name,
       "Contact: " + values.contact,
       "For: " + (values.purpose || "-"),
@@ -548,14 +558,42 @@ function initCatalogRequestForm(email, materials, social) {
       return;
     }
 
-    const waLink = `${social.whatsapp}?text=${encodeURIComponent(waText({ name, contact, purpose: form.purpose.value.trim(), material: materialSelect.value, description }))}`;
+    const requestId = generateRequestId();
+    try { localStorage.setItem("lastRequestId", requestId); } catch (err) {}
+
+    const values = { requestId, name, contact, purpose: form.purpose.value.trim(), material: materialSelect.value, description };
+    const waLink = `${social.whatsapp}?text=${encodeURIComponent(waText(values))}`;
     const handoff = `<a class="handoff" href="${waLink}" target="_blank">📲 ${t("catalog.reqWhatsapp")}</a>`;
 
     status.hidden = false;
     status.className = "request-status success";
-    status.innerHTML = `${t("catalog.reqSuccess")} ${handoff}`;
+    status.innerHTML = `
+      <div class="request-id-block">
+        <div class="request-id-label">${t("catalog.reqIdLabel")}</div>
+        <div class="request-id-field">
+          <span class="request-id-value">${requestId}</span>
+          <button type="button" class="request-id-copy" data-copy-id="${requestId}">${t("catalog.reqIdCopy")}</button>
+        </div>
+        <div class="request-id-hint">${t("catalog.reqIdHint").replace("{track}", '<a href="#track">').replace("{/track}", "</a>")}</div>
+      </div>
+      ${t("catalog.reqSuccess")} ${handoff}`;
     submitBtn.disabled = true;
     submitBtn.textContent = t("catalog.reqSending");
+
+    const idCopy = status.querySelector("[data-copy-id]");
+    if (idCopy) idCopy.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(idCopy.dataset.copyId);
+        idCopy.textContent = t("catalog.reqIdCopied");
+        setTimeout(() => { idCopy.textContent = t("catalog.reqIdCopy"); }, 2000);
+      } catch (err) {
+        const range = document.createRange();
+        range.selectNodeContents(status.querySelector(".request-id-value"));
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    });
 
     if (email) {
       try {
@@ -569,7 +607,8 @@ function initCatalogRequestForm(email, materials, social) {
             material: materialSelect.value,
             description,
             files: files.map((f) => f.name).join(", "),
-            _subject: `Custom model request - Suntar-Plastic (${name})`,
+            request_id: requestId,
+            _subject: `Custom model request ${requestId} - Suntar-Plastic (${name})`,
             _captcha: "false",
             _honey: form.querySelector('[name="_honey"]').value,
             _template: "table",
@@ -601,6 +640,53 @@ function updateThemeBtn(btn) {
 
 /* ===== SINGLE-PAGE RENDERER ===== */
 
+function initRequestTracker(requests) {
+  const form = document.getElementById("trackForm");
+  const input = document.getElementById("trackInput");
+  const result = document.getElementById("trackResult");
+  if (!form || !input || !result) return;
+
+  try {
+    const last = localStorage.getItem("lastRequestId");
+    if (last) input.value = last;
+  } catch (err) {}
+
+  const STATUS_STEPS = ["received", "printing", "ready", "done"];
+
+  function renderStatus(item) {
+    const cancelled = item.status === "cancelled" || item.status === "declined";
+    const step = STATUS_STEPS.indexOf(item.status);
+    const stepsHtml = STATUS_STEPS.map((s, i) => {
+      const active = !cancelled && step >= i;
+      return `<div class="track-step ${active ? "active" : ""}"><span class="track-step-icon">${active ? "✓" : ""}</span><span>${t("track.status." + s)}</span></div>`;
+    }).join("");
+
+    result.className = "track-result " + (cancelled ? "track-cancelled" : "");
+    result.innerHTML = `
+      ${cancelled
+        ? `<div class="track-cancelled-badge">${t("track.status." + item.status)}</div>`
+        : `<div class="track-steps">${stepsHtml}</div>`}
+      <div class="track-date">${t("track.updated")}: ${item.updatedAt || "—"}</div>
+      ${item.note ? `<div class="track-note">${item.note}</div>` : ""}
+    `;
+    result.hidden = false;
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const id = input.value.trim().toUpperCase();
+    if (!id) return;
+    const item = (requests || []).find((r) => String(r.id || "").trim().toUpperCase() === id);
+    if (!item) {
+      result.className = "track-result track-error";
+      result.innerHTML = `<div class="track-error-text">${t("track.notFound")}</div>`;
+      result.hidden = false;
+      return;
+    }
+    renderStatus(item);
+  });
+}
+
 async function renderSite() {
   const social = await loadJSON("data/social.json");
   const promo = await loadJSON("data/promo.json");
@@ -610,6 +696,7 @@ async function renderSite() {
   const gallery = await loadJSON("data/gallery.json");
   const catalog = await loadJSON("data/catalog.json");
   const news = await loadJSON("data/news.json");
+  const requests = await loadJSON("data/requests.json");
 
   const promoHtml = promo.active
     ? `<div class="promo-banner" id="promoBanner"><span>${promo.text}</span><button class="promo-close" onclick="document.getElementById('promoBanner').style.display='none'">✕</button></div>`
@@ -746,6 +833,18 @@ async function renderSite() {
       </div>
     </div>
 
+    <div class="track-section" id="track">
+      <h2 class="section-title">${t("track.title")}</h2>
+      <p class="section-subtitle">${t("track.subtitle")}</p>
+      <div class="track-box">
+        <form id="trackForm" class="track-form" novalidate>
+          <input type="text" id="trackInput" placeholder="${t("track.inputPlaceholder")}" autocomplete="off" inputmode="text">
+          <button type="submit" class="btn-primary">${t("track.button")}</button>
+        </form>
+        <div class="track-result" id="trackResult" hidden></div>
+      </div>
+    </div>
+
     <div class="map-section" id="map">
       <h2 class="section-title">${t("map.title")}</h2>
       <p class="section-subtitle">${t("map.subtitle")}</p>
@@ -846,6 +945,7 @@ async function renderSite() {
   initTestimonials();
   initCatalogWorkbench(catalog, social);
   initCatalogRequestForm(social.contactEmail, materials, social);
+  initRequestTracker(requests);
   applyHash();
 }
 
