@@ -2,16 +2,19 @@
   {
     "title": "How to Measure a Part for Printing",
     "description": "Bring or send a photo of the broken part along with its dimensions. Use a ruler or calipers for accuracy — even rough measurements help us get started.",
-    "date": "2026-09-01"
+    "date": "2026-09-01",
+    "image": "images/news-measure.svg"
   },
   {
     "title": "PLA vs PETG: Which Material to Choose",
     "description": "PLA is great for decorative items and prototypes. PETG is stronger and more heat-resistant — better for parts that will be used outdoors or under stress.",
-    "date": "2026-08-25"
+    "date": "2026-08-25",
+    "image": "images/news-materials.svg"
   },
   {
     "title": "Why Local Printing Beats Online Orders",
     "description": "No shipping wait, no minimum order. Walk in, describe what you need, and get it printed the same day in most cases.",
-    "date": "2026-08-18"
+    "date": "2026-08-18",
+    "image": "images/news-local.svg"
   }
 ]

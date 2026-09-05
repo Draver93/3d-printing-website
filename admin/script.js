@@ -29,6 +29,7 @@ const SCHEMAS = {
     fields: [
       { key: "title", label: "Title", type: "text" },
       { key: "description", label: "Description", type: "textarea" },
+      { key: "image", label: "Image URL (optional)", type: "text" },
       { key: "date", label: "Date", type: "date" },
     ] },
   testimonials: { path: "data/testimonials.json", label: "Testimonials", array: true,

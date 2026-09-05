@@ -208,6 +208,74 @@ function initTestimonials() {
   }, { passive: true });
 }
 
+function initNewsCarousel() {
+  const carousel = document.getElementById("newsCarousel");
+  const track = document.getElementById("newsTrack");
+  if (!carousel || !track) return;
+
+  const slides = Array.from(track.children);
+  const total = slides.length;
+  const dotsWrap = document.getElementById("newsDots");
+  const prevBtn = carousel.querySelector(".carousel-prev");
+  const nextBtn = carousel.querySelector(".carousel-next");
+
+  if (total <= 1) {
+    if (prevBtn) prevBtn.style.display = "none";
+    if (nextBtn) nextBtn.style.display = "none";
+    return;
+  }
+
+  let index = 0;
+  let timer = null;
+  const INTERVAL = 5000;
+
+  function buildDots() {
+    dotsWrap.innerHTML = Array.from({ length: total }, (_, i) => `<span class="dot" data-i="${i}"></span>`).join("");
+    dotsWrap.querySelectorAll(".dot").forEach((d) => d.addEventListener("click", () => { go(parseInt(d.dataset.i)); start(); }));
+    updateDots();
+  }
+
+  function updateDots() {
+    dotsWrap.querySelectorAll(".dot").forEach((el, j) => el.classList.toggle("active", j === index));
+  }
+
+  function apply() {
+    track.style.transform = `translateX(-${index * 100}%)`;
+    updateDots();
+  }
+
+  function go(i) {
+    index = ((i % total) + total) % total;
+    apply();
+  }
+
+  function nextSlide() { go(index + 1); }
+  function prevSlide() { go(index - 1); }
+
+  function start() { stop(); timer = setInterval(nextSlide, INTERVAL); }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+  buildDots();
+  go(0);
+  start();
+
+  carousel.addEventListener("mouseenter", stop);
+  carousel.addEventListener("mouseleave", start);
+
+  prevBtn.addEventListener("click", () => { prevSlide(); start(); });
+  nextBtn.addEventListener("click", () => { nextSlide(); start(); });
+
+  let touchStartX = null;
+  carousel.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  carousel.addEventListener("touchend", (e) => {
+    if (touchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) (dx < 0 ? nextSlide() : prevSlide());
+    touchStartX = null;
+    start();
+  }, { passive: true });
+}
+
 function initCatalogWorkbench(catalog, social) {
   const list = document.getElementById("catalogList");
   const search = document.getElementById("catalogSearch");
@@ -515,14 +583,26 @@ async function renderSite() {
     <div class="news-section" id="news">
       <h2 class="section-title">${t("news.title")}</h2>
       <p class="section-subtitle">${t("news.subtitle")}</p>
-      <div class="news-grid">
-        ${news.map((item) => `
-          <div class="news-card">
-            <div class="date">${item.date}</div>
-            <h3>${item.title}</h3>
-            <p>${item.description}</p>
+      <div class="carousel news-carousel" id="newsCarousel">
+        <button type="button" class="carousel-arrow carousel-prev" aria-label="${t("news.prev")}">❮</button>
+        <div class="carousel-viewport">
+          <div class="carousel-track" id="newsTrack">
+            ${news.map((item) => `
+              <div class="news-slide">
+                <article class="news-card">
+                  ${item.image ? `<div class="news-cover"><img src="${item.image}" alt="${item.title}" loading="lazy"></div>` : `<div class="news-cover news-cover-empty"><span>🖨</span></div>`}
+                  <div class="news-body">
+                    <div class="date">${item.date}</div>
+                    <h3>${item.title}</h3>
+                    <p>${item.description}</p>
+                  </div>
+                </article>
+              </div>
+            `).join("")}
           </div>
-        `).join("")}
+        </div>
+        <button type="button" class="carousel-arrow carousel-next" aria-label="${t("news.next")}">❯</button>
+        <div class="carousel-dots" id="newsDots"></div>
       </div>
     </div>
 
@@ -657,6 +737,7 @@ async function renderSite() {
   `;
 
   setTimeout(initMap, 100);
+  initNewsCarousel();
   initTestimonials();
   initCatalogWorkbench(catalog, social);
   initCatalogRequestForm(social.contactEmail, materials, social);

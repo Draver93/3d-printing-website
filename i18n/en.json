@@ -110,7 +110,9 @@
   },
   "news": {
     "title": "News & Tips",
-    "subtitle": "Helpful information about 3D printing and our services."
+    "subtitle": "Helpful information about 3D printing and our services.",
+    "prev": "Previous article",
+    "next": "Next article"
   },
   "ctaCatalog": {
     "title": "Need a specific model?",
