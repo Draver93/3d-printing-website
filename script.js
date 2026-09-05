@@ -28,8 +28,8 @@ function updateLangButton() {
 
 function buildLangDropdown() {
   const dropdown = document.getElementById("langDropdown");
-  const langs = ["en", "ru", "pl", "de"];
-  const names = { en: "English", ru: "Русский", pl: "Polski", de: "Deutsch" };
+  const langs = ["ru", "en", "sah"];
+  const names = { ru: "Русский", en: "English", sah: "Саха тыла" };
   dropdown.innerHTML = langs.map((l) =>
     `<button data-lang="${l}" style="${l === currentLang ? "color:#fff;font-weight:700" : ""}">${names[l]}</button>`
   ).join("");
