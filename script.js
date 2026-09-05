@@ -2,8 +2,8 @@ const app = document.getElementById("app");
 let currentLang = ["en", "ru", "sah"].includes(localStorage.getItem("lang")) ? localStorage.getItem("lang") : "en";
 let translations = {};
 
-const NAV_SECTIONS = ["home", "services", "catalog", "gallery", "news", "faq"];
-const SCROLL_ORDER = ["home", "stats", "gallery", "process", "news", "testimonials", "faq", "sizes", "map", "contact"];
+const NAV_SECTIONS = ["home", "catalog", "gallery", "news", "faq"];
+const SCROLL_ORDER = ["home", "stats", "gallery", "process", "news", "testimonials", "faq", "map", "contact"];
 let currentView = "home";
 
 async function loadLang(lang) {
@@ -106,11 +106,17 @@ function initMap() {
   if (!window.L) return;
   const el = document.getElementById("map-container");
   if (!el) return;
-  const map = L.map("map-container").setView([62.18, 117.63], 6);
+  const map = L.map("map-container", { scrollWheelZoom: false }).setView([62.18, 117.63], 6);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap"
   }).addTo(map);
   L.marker([62.18, 117.63]).addTo(map).bindPopup("Suntar, Yakutia");
+  map.on("wheel", (e) => {
+    if (!e.originalEvent.ctrlKey) return;
+    e.originalEvent.preventDefault();
+    if (e.originalEvent.deltaY < 0) map.zoomIn();
+    else map.zoomOut();
+  });
 }
 
 function initTestimonials() {
@@ -460,10 +466,6 @@ async function renderSite() {
       <div class="hero-text">
         <h1>${t("hero.title")} <span>${t("hero.titleHighlight")}</span></h1>
         <p>${t("hero.subtitle")}</p>
-        <div class="hero-actions">
-          <a href="${social.whatsapp}" target="_blank" class="btn-primary">${t("hero.cta")}</a>
-          <a href="#services" class="btn-secondary">${t("hero.secondary")}</a>
-        </div>
       </div>
       <div class="hero-visual"><div class="hero-icon">🖨</div></div>
     </div>
@@ -562,16 +564,6 @@ async function renderSite() {
       </div>
     </div>
 
-    <div class="size-ref-section" id="sizes">
-      <h2 class="section-title">${t("fileRef.title")}</h2>
-      <p class="section-subtitle">${t("fileRef.subtitle")}</p>
-      <div class="size-ref-grid">
-        <div class="size-ref-card"><div class="size-icon">📱</div><div class="size-label">${t("fileRef.small")}</div><div class="size-desc">${t("fileRef.smallSize")}</div></div>
-        <div class="size-ref-card"><div class="size-icon">📦</div><div class="size-label">${t("fileRef.medium")}</div><div class="size-desc">${t("fileRef.mediumSize")}</div></div>
-        <div class="size-ref-card"><div class="size-icon">🎁</div><div class="size-label">${t("fileRef.large")}</div><div class="size-desc">${t("fileRef.largeSize")}</div></div>
-      </div>
-    </div>
-
     <div class="map-section" id="map">
       <h2 class="section-title">${t("map.title")}</h2>
       <p class="section-subtitle">${t("map.subtitle")}</p>
@@ -579,10 +571,14 @@ async function renderSite() {
     </div>
 
     <div class="contact-section" id="contact">
-      <div class="cta-box">
+      <div class="social-box">
         <h2>${t("cta.title")}</h2>
         <p>${t("cta.subtitle")}</p>
-        <a href="${social.whatsapp}" target="_blank" class="btn-whatsapp">💬 WhatsApp</a>
+        <div class="social-row">
+          ${social.instagram ? `<a href="${social.instagram}" target="_blank" rel="noopener" class="social-link"><span class="social-ico">📷</span>Instagram</a>` : ""}
+          ${social.telegram ? `<a href="${social.telegram}" target="_blank" rel="noopener" class="social-link"><span class="social-ico">✈</span>Telegram</a>` : ""}
+          ${social.whatsapp ? `<a href="${social.whatsapp}" target="_blank" rel="noopener" class="social-link"><span class="social-ico">💬</span>WhatsApp</a>` : ""}
+        </div>
       </div>
     </div>
     </div>

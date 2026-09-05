@@ -1,29 +1,16 @@
 {
   "nav": {
     "home": "Home",
-    "services": "Services",
     "catalog": "Catalog",
     "gallery": "Gallery",
     "news": "News",
     "faq": "FAQ",
-    "quote": "Get a Quote"
+    "quote": "Request a Model"
   },
   "hero": {
     "title": "Custom",
     "titleHighlight": "3D Printing",
-    "subtitle": "Hard-to-find replacement parts, custom components, and unique decorative items — serving Suntar, Yakutia, Sakha Republic. Printed locally and delivered fast. No minimum order, no shipping wait.",
-    "cta": "Request a Quote",
-    "secondary": "View Services"
-  },
-  "services": {
-    "title": "Our Services",
-    "subtitle": "From replacement parts to custom designs — we print what you need.",
-    "items": {
-      "0": { "title": "Replacement Parts", "desc": "Can't find a part for your car, appliance, or machine? We model and print hard-to-find components that are no longer manufactured." },
-      "1": { "title": "Custom Parts", "desc": "Send us a sketch or measurements and we will design and print brackets, mounts, enclosures, and more." },
-      "2": { "title": "Decorative Items", "desc": "Phone stands, cable organizers, planters, storage boxes, and other functional everyday items." },
-      "3": { "title": "3D Scanning & Modeling", "desc": "Have a broken part but no 3D file? We scan the original and recreate it digitally for printing." }
-    }
+    "subtitle": "Hard-to-find replacement parts, custom components, and unique decorative items — serving Suntar, Yakutia, Sakha Republic. Printed locally and delivered fast. No minimum order, no shipping wait."
   },
   "process": {
     "title": "How It Works",
@@ -131,19 +118,8 @@
     "button": "Request a model"
   },
   "cta": {
-    "title": "Ready to Get Started?",
-    "subtitle": "Send us a message on WhatsApp and we'll get back to you quickly.",
-    "button": "Chat on WhatsApp"
-  },
-  "fileRef": {
-    "title": "Size Reference",
-    "subtitle": "Approximate print sizes and weights to help you estimate.",
-    "small": "Small",
-    "medium": "Medium",
-    "large": "Large",
-    "smallSize": "~20g \u00b7 ~3cm",
-    "mediumSize": "~80g \u00b7 ~10cm",
-    "largeSize": "~200g \u00b7 ~20cm"
+    "title": "We're on social media",
+    "subtitle": "Instagram, Telegram, WhatsApp — find us and send a message."
   },
   "map": {
     "title": "Where We Are",
