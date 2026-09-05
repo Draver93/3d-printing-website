@@ -946,7 +946,8 @@ main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100
 .catalog-3d {
   width: 100%;
   flex: none;
-  min-height: 280px;
+  height: 300px;
+  min-height: 0;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--card-bg);
@@ -1546,7 +1547,7 @@ footer { background: var(--footer-bg); color: var(--footer-text); padding: 2rem 
   .catalog-workbench { grid-template-columns: 240px 1fr; }
   .catalog-details { grid-column: 1 / -1; max-height: none; flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
   .catalog-details-body { flex: 1; min-width: 260px; }
-  .catalog-3d { flex: 1 1 260px; width: auto; min-height: 240px; }
+  .catalog-3d { flex: 1 1 260px; width: auto; height: 260px; min-height: 0; }
   .details-head { width: 100%; }
   .details-desc { width: 100%; }
   .details-prices { min-width: 200px; }
@@ -1596,7 +1597,9 @@ footer { background: var(--footer-bg); color: var(--footer-text); padding: 2rem 
   .catalog-list-price { font-size: 0.9rem; }
   .catalog-3d { height: 200px; min-height: 0; }
   .catalog-3d-emoji { font-size: 2.2rem; }
-  .catalog-3d-img { width: 100%; height: 100%; object-fit: contain; }
+.catalog-3d-img { width: 100%; height: 100%; object-fit: contain; }
+
+.catalog-3d model-viewer { display: block; width: 100%; height: 100%; }
   .catalog-details { flex-direction: column; padding: 1rem; text-align: center; }
   .catalog-details .details-head { align-items: center; }
   .catalog-details .details-cat { align-self: center; }
