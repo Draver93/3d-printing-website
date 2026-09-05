@@ -384,7 +384,9 @@ function initCatalogWorkbench(catalog, social) {
   const crumbsEl = document.getElementById("catalogCrumbs");
   const countEl = document.getElementById("catalogCount");
   const sortEl = document.getElementById("catalogSort");
-  if (!list || !search || !treeWrap || !empty || !preview3d || !details || !crumbsEl || !countEl || !sortEl) return;
+  const sidebar = document.getElementById("catalogSidebar");
+  const treeToggle = document.getElementById("catalogTreeToggle");
+  if (!list || !search || !treeWrap || !empty || !preview3d || !details || !crumbsEl || !countEl || !sortEl || !sidebar || !treeToggle) return;
 
   const CAT_SEP = " > ";
   const SORT_ORDER = { pop: 0, "price-asc": 0, "price-desc": 0 };
@@ -493,10 +495,12 @@ function initCatalogWorkbench(catalog, social) {
 
   function render3d(item) {
     if (item.model) {
+      preview3d.classList.add("has-model");
       preview3d.innerHTML = `
         <model-viewer src="${item.model}" alt="${escHtml(item.name)}" camera-controls auto-rotate shadow-intensity="1" exposure="1.1"
           style="width:100%;height:100%"></model-viewer>`;
     } else {
+      preview3d.classList.remove("has-model");
       preview3d.innerHTML = `<div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">🧊</span><span>${t("catalog.no3d")}</span></div>`;
     }
   }
@@ -536,6 +540,7 @@ function initCatalogWorkbench(catalog, social) {
     renderToolbar(items);
 
     if (items.length === 0) {
+      preview3d.classList.remove("has-model");
       preview3d.innerHTML = `<div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">🧊</span><span>${t("catalog.select")}</span></div>`;
       details.innerHTML = `<div class="catalog-select-hint">${t("catalog.select")}</div>`;
       selectedName = "";
@@ -603,6 +608,26 @@ function initCatalogWorkbench(catalog, social) {
   search.addEventListener("input", () => {
     query = search.value.trim();
     renderList();
+  });
+
+  function setTreeOpen(open) {
+    sidebar.classList.toggle("tree-open", open);
+    treeToggle.setAttribute("aria-expanded", String(open));
+  }
+
+  treeToggle.addEventListener("click", () => {
+    setTreeOpen(!sidebar.classList.contains("tree-open"));
+  });
+
+  const TREE_SMALL = window.matchMedia("(max-width: 768px)");
+  TREE_SMALL.addEventListener("change", (e) => {
+    if (!e.matches) { sidebar.classList.remove("tree-open"); treeToggle.setAttribute("aria-expanded", "false"); }
+  });
+  if (!TREE_SMALL.matches) sidebar.classList.add("tree-open");
+  else setTreeOpen(false);
+
+  treeWrap.addEventListener("click", (e) => {
+    if (e.target.closest(".tree-link") && TREE_SMALL.matches && sidebar.classList.contains("tree-open")) setTreeOpen(false);
   });
 
   renderTree();
@@ -1014,12 +1039,15 @@ async function renderSite() {
 
     <div class="view" id="view-catalog">
       <section class="catalog-workbench">
-        <aside class="catalog-sidebar">
+        <aside class="catalog-sidebar" id="catalogSidebar">
           <div class="catalog-sidebar-head">
             <h2>${t("catalog.title")}</h2>
             <p>${t("catalog.subtitle")}</p>
           </div>
           <input type="search" id="catalogSearch" class="catalog-search" placeholder="${t("catalog.search")}">
+          <button type="button" class="catalog-tree-toggle" id="catalogTreeToggle" aria-expanded="false">
+            <span>${t("catalog.categories")}</span><span class="tree-chevron">▸</span>
+          </button>
           <nav class="catalog-tree" id="catalogTree" aria-label="${t("catalog.title")}"></nav>
         </aside>
 
