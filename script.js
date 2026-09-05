@@ -713,6 +713,12 @@ window.openOrderModal = function (context) {
         <label for="orderMessage">${t("catalog.orderMessage")}</label>
         <textarea id="orderMessage" name="message" rows="2" placeholder="${t("catalog.orderMessagePlaceholder")}"></textarea>
       </div>
+      <div class="order-field">
+        <label for="orderFiles">${t("catalog.reqAttachments")}</label>
+        <input type="file" id="orderFiles" name="files" multiple accept=".stl,.obj,.3mf,.step,.stp,.png,.jpg,.jpeg,.webp">
+        <div class="file-list" id="orderFileList"></div>
+        <div class="material-hint">${t("catalog.reqAttachmentsHint")}</div>
+      </div>
       <button type="submit" class="btn-primary order-submit" id="orderSubmit">${t("catalog.reqSend")}</button>
       <div class="request-status" id="orderStatus" hidden></div>
     </form>`;
@@ -720,6 +726,41 @@ window.openOrderModal = function (context) {
   const form = body.querySelector("#orderForm");
   const statusEl = body.querySelector("#orderStatus");
   const submitBtn = body.querySelector("#orderSubmit");
+  const fileInput = body.querySelector("#orderFiles");
+  const fileListEl = body.querySelector("#orderFileList");
+  let files = [];
+
+  function renderFiles() {
+    fileListEl.innerHTML = files.map((f, i) =>
+      `<span class="file-chip">📎 ${escHtml(f.name)}<button type="button" data-f="${i}" aria-label="${t("catalog.reqRemove")}">✕</button></span>`
+    ).join("");
+    fileListEl.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        files.splice(Number(btn.dataset.f), 1);
+        renderFiles();
+      });
+    });
+  }
+
+  fileInput.addEventListener("change", () => {
+    for (const f of fileInput.files) {
+      if (!files.some((x) => x.name === f.name && x.size === f.size)) files.push(f);
+    }
+    fileInput.value = "";
+    renderFiles();
+  });
+
+  function lockForm() {
+    form.querySelectorAll("input, textarea, .file-list button").forEach((el) => { el.disabled = true; });
+    submitBtn.disabled = true;
+    submitBtn.textContent = t("catalog.reqSent");
+  }
+
+  function unlockForm() {
+    form.querySelectorAll("input, textarea, .file-list button").forEach((el) => { el.disabled = false; });
+    submitBtn.disabled = false;
+    submitBtn.textContent = t("catalog.reqSend");
+  }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -738,6 +779,7 @@ window.openOrderModal = function (context) {
     try { localStorage.setItem("lastRequestId", requestId); } catch (err) {}
 
     const purposeLabel = context.type === "print" ? "Order print" : context.type === "buy" ? "Buy model" : "Custom request";
+    const attachments = files.map((f) => f.name).join(", ");
 
     const waLines = [
       purposeLabel + (context.name ? ": " + context.name : ""),
@@ -746,6 +788,7 @@ window.openOrderModal = function (context) {
       "Name: " + name,
       "Contact: " + contact,
       message ? "Message: " + message : "",
+      files.length ? "Attachments: " + attachments : "",
     ].filter(Boolean).join("\n");
 
     const waLink = `${social.whatsapp}?text=${encodeURIComponent(waLines)}`;
@@ -763,8 +806,7 @@ window.openOrderModal = function (context) {
         <div class="request-id-hint">${t("catalog.reqIdHint").replace("{track}", '<a href="#track">').replace("{/track}", "</a>")}</div>
       </div>
       ${t("catalog.reqSuccess")} ${handoff}`;
-    submitBtn.disabled = true;
-    submitBtn.textContent = t("catalog.reqSending");
+    lockForm();
 
     const idCopy = statusEl.querySelector("[data-copy-id]");
     if (idCopy) idCopy.addEventListener("click", async () => {
@@ -792,6 +834,7 @@ window.openOrderModal = function (context) {
             item: context.name || "",
             price: context.price || "",
             name, contact, message,
+            files: attachments,
             _subject: `Request ${requestId} - Suntar-Plastic (${name})`,
             _captcha: "false",
             _honey: form.querySelector('[name="_honey"]').value,
@@ -800,17 +843,16 @@ window.openOrderModal = function (context) {
         });
         const data = await res.json().catch(() => ({}));
         if (!(res.ok && data.success !== false)) {
+          unlockForm();
           statusEl.className = "request-status error";
           statusEl.innerHTML = `${t("catalog.reqError")} ${handoff}`;
         }
       } catch (err) {
+        unlockForm();
         statusEl.className = "request-status error";
         statusEl.innerHTML = `${t("catalog.reqError")} ${handoff}`;
       }
     }
-
-    submitBtn.disabled = false;
-    submitBtn.textContent = t("catalog.reqSend");
   });
 
   modal.hidden = false;

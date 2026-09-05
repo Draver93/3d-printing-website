@@ -124,6 +124,7 @@
     "reqRemove": "Remove file",
     "reqSend": "Send request",
     "reqSending": "Sending...",
+    "reqSent": "Request sent",
     "reqSuccess": "Request collected. Send the details and files to us on WhatsApp:",
     "reqError": "Could not send the email, but your request is ready:",
     "reqWhatsapp": "Send via WhatsApp",
