@@ -2,7 +2,7 @@
   {
     "name": "Cable Organizer",
     "description": "Desktop clip that keeps charging cables tidy in one place.",
-    "category": "Desktop",
+    "category": "Desktop > Organizers",
     "pricePrint": 350,
     "priceModel": 150,
     "model": "models/astronaut.glb",
@@ -10,9 +10,19 @@
     "image": ""
   },
   {
+    "name": "Pen & Tool Holder",
+    "description": "Sloped desk holder for pens, markers and small tools.",
+    "category": "Desktop > Organizers",
+    "pricePrint": 300,
+    "priceModel": 150,
+    "model": "",
+    "icon": "✏️",
+    "image": ""
+  },
+  {
     "name": "Phone Stand",
     "description": "Sturdy adjustable stand for desk or bedside use.",
-    "category": "Desktop",
+    "category": "Desktop > Phone Stands",
     "pricePrint": 400,
     "priceModel": 200,
     "model": "",
@@ -20,19 +30,39 @@
     "image": ""
   },
   {
-    "name": "Plant Pot",
-    "description": "Geometric planter with drainage hole, in many colors.",
-    "category": "Home",
-    "pricePrint": 500,
+    "name": "Tablet Stand",
+    "description": "Folding stand that holds tablets and e-readers firmly.",
+    "category": "Desktop > Phone Stands",
+    "pricePrint": 550,
     "priceModel": 250,
     "model": "",
-    "icon": "🪴",
+    "icon": "📲",
+    "image": ""
+  },
+  {
+    "name": "Laptop Riser",
+    "description": "Portable riser that lifts your laptop for better posture.",
+    "category": "Desktop > Accessories",
+    "pricePrint": 800,
+    "priceModel": 350,
+    "model": "",
+    "icon": "💻",
+    "image": ""
+  },
+  {
+    "name": "Reading Stand",
+    "description": "Book and sheet music stand with adjustable tilt.",
+    "category": "Desktop > Accessories",
+    "pricePrint": 450,
+    "priceModel": 200,
+    "model": "",
+    "icon": "📖",
     "image": ""
   },
   {
     "name": "Storage Box",
     "description": "Small parts organizer with snap-fit lid.",
-    "category": "Storage",
+    "category": "Home > Storage",
     "pricePrint": 450,
     "priceModel": 200,
     "model": "",
@@ -40,9 +70,29 @@
     "image": ""
   },
   {
+    "name": "Drawer Dividers (4-pack)",
+    "description": "Modular dividers that keep drawers neat and organized.",
+    "category": "Home > Storage",
+    "pricePrint": 350,
+    "priceModel": 150,
+    "model": "",
+    "icon": "🗂️",
+    "image": ""
+  },
+  {
+    "name": "Spice Jar Organizer",
+    "description": "Two-tier rack so spice jars stay visible and easy to grab.",
+    "category": "Home > Storage",
+    "pricePrint": 600,
+    "priceModel": 250,
+    "model": "",
+    "icon": "🧂",
+    "image": ""
+  },
+  {
     "name": "Key Holder",
     "description": "Wall-mounted holder for keys and small items.",
-    "category": "Home",
+    "category": "Home > Entryway",
     "pricePrint": 300,
     "priceModel": 150,
     "model": "",
@@ -50,13 +100,123 @@
     "image": ""
   },
   {
+    "name": "Coat Hook Set",
+    "description": "Set of two sturdy hooks for jackets, bags and towels.",
+    "category": "Home > Entryway",
+    "pricePrint": 400,
+    "priceModel": 180,
+    "model": "",
+    "icon": "🪝",
+    "image": ""
+  },
+  {
+    "name": "Plant Pot",
+    "description": "Geometric planter with drainage hole, in many colors.",
+    "category": "Home > Plants",
+    "pricePrint": 500,
+    "priceModel": 250,
+    "model": "",
+    "icon": "🪴",
+    "image": ""
+  },
+  {
+    "name": "Plant Pot Hanger",
+    "description": "Hanging cradle for small pots, fits standard sizes.",
+    "category": "Home > Plants",
+    "pricePrint": 400,
+    "priceModel": 180,
+    "model": "",
+    "icon": "🪴",
+    "image": ""
+  },
+  {
     "name": "Decor Snowflake",
     "description": "Lightweight ornament for winter decorations and gifts.",
-    "category": "Decor",
+    "category": "Home > Decor",
     "pricePrint": 250,
     "priceModel": 100,
     "model": "",
-    "icon": "❄",
+    "icon": "❄️",
+    "image": ""
+  },
+  {
+    "name": "Geometric Vase",
+    "description": "Modern faceted vase that looks great empty or with flowers.",
+    "category": "Home > Decor",
+    "pricePrint": 650,
+    "priceModel": 280,
+    "model": "",
+    "icon": "🏺",
+    "image": ""
+  },
+  {
+    "name": "Hex Nuts M5 (pack of 20)",
+    "description": "Replacement hex nuts printed in strong PETG or ABS.",
+    "category": "Tools & Parts > Fasteners",
+    "pricePrint": 250,
+    "priceModel": 100,
+    "model": "",
+    "icon": "🔩",
+    "image": ""
+  },
+  {
+    "name": "Spacer & Bushing Set",
+    "description": "Mixed set of spacers for repairs and DIY projects.",
+    "category": "Tools & Parts > Fasteners",
+    "pricePrint": 300,
+    "priceModel": 120,
+    "model": "",
+    "icon": "⚙️",
+    "image": ""
+  },
+  {
+    "name": "Vacuum Adapter Ring",
+    "description": "Spare ring for a common hand vacuum model.",
+    "category": "Tools & Parts > Spare Parts",
+    "pricePrint": 400,
+    "priceModel": 180,
+    "model": "",
+    "icon": "🧲",
+    "image": ""
+  },
+  {
+    "name": "Light Switch Spacer",
+    "description": "Replacement spacer for recessed light switches.",
+    "category": "Tools & Parts > Spare Parts",
+    "pricePrint": 350,
+    "priceModel": 150,
+    "model": "",
+    "icon": "💡",
+    "image": ""
+  },
+  {
+    "name": "Castle Puzzle Toy",
+    "description": "Assemble-it-yourself castle model, fun for older kids.",
+    "category": "Gifts > Toys",
+    "pricePrint": 500,
+    "priceModel": 250,
+    "model": "",
+    "icon": "🏰",
+    "image": ""
+  },
+  {
+    "name": "Fidget Cube Puzzle",
+    "description": "Small puzzle cube with hidden routes and tricks.",
+    "category": "Gifts > Toys",
+    "pricePrint": 450,
+    "priceModel": 200,
+    "model": "",
+    "icon": "🧩",
+    "image": ""
+  },
+  {
+    "name": "Christmas Ornament",
+    "description": "Light holiday bauble you can decorate and hang.",
+    "category": "Gifts > Seasonal",
+    "pricePrint": 300,
+    "priceModel": 130,
+    "model": "",
+    "icon": "🎄",
     "image": ""
   }
 ]

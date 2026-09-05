@@ -367,32 +367,112 @@ function initNewsModal() {
   });
 }
 
+function escHtml(s) {
+  return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 function initCatalogWorkbench(catalog, social) {
   const list = document.getElementById("catalogList");
   const search = document.getElementById("catalogSearch");
-  const chipsWrap = document.getElementById("catalogChips");
+  const treeWrap = document.getElementById("catalogTree");
   const empty = document.getElementById("catalogEmpty");
   const preview3d = document.getElementById("preview3d");
   const details = document.getElementById("previewDetails");
-  if (!list || !search || !chipsWrap || !preview3d || !details) return;
+  const crumbsEl = document.getElementById("catalogCrumbs");
+  const countEl = document.getElementById("catalogCount");
+  const sortEl = document.getElementById("catalogSort");
+  if (!list || !search || !treeWrap || !empty || !preview3d || !details || !crumbsEl || !countEl || !sortEl) return;
+
+  const CAT_SEP = " > ";
+  const SORT_ORDER = { pop: 0, "price-asc": 0, "price-desc": 0 };
 
   let query = "";
-  let activeCat = "";
+  let activePath = "";
+  let sortMode = "pop";
   let selectedName = "";
+  const openSet = new Set();
 
   const fmt = (n) => (Number(n) || 0).toLocaleString("ru-RU");
 
-  const cats = ["", ...new Set(catalog.map((i) => i.category).filter(Boolean))];
-  chipsWrap.innerHTML = cats.map((c) =>
-    `<button type="button" class="chip" data-cat="${c}">${c === "" ? t("catalog.all") : c}</button>`
-  ).join("");
+  const tree = { name: "", count: 0, children: new Map() };
+  for (const item of catalog) {
+    const segs = (item.category || "").split(CAT_SEP).map((s) => s.trim()).filter(Boolean);
+    let node = tree;
+    for (const seg of segs) {
+      if (!node.children.has(seg)) node.children.set(seg, { name: seg, count: 0, children: new Map() });
+      node = node.children.get(seg);
+      node.count++;
+    }
+  }
+  tree.count = catalog.length;
+
+  function nodeHtml(node, path) {
+    let html = "";
+    const children = [...node.children.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    for (const [name, child] of children) {
+      const full = path ? path + CAT_SEP + name : name;
+      const hasChildren = child.children.size > 0;
+      const isOpen = openSet.has(full);
+      html += `
+        <li class="cat-tree-item">
+          <div class="cat-tree-row">
+            <button type="button" class="tree-toggle ${hasChildren ? (isOpen ? "open" : "") : "leaf"}" data-toggle="${escHtml(full)}" aria-label="${escHtml(name)}">${hasChildren ? "▸" : ""}</button>
+            <button type="button" class="tree-link ${full === activePath ? "active" : ""}" data-cat="${escHtml(full)}">
+              <span class="tree-name">${escHtml(name)}</span>
+              <span class="tree-count">${child.count}</span>
+            </button>
+          </div>
+          ${hasChildren && isOpen ? `<ul class="tree-sub">${nodeHtml(child, full)}</ul>` : ""}
+        </li>`;
+    }
+    return html;
+  }
+
+  function renderTree() {
+    treeWrap.innerHTML = `
+      <ul class="cat-tree">
+        <li class="cat-tree-item">
+          <div class="cat-tree-row">
+            <button type="button" class="tree-link root ${activePath === "" ? "active" : ""}" data-cat="">
+              <span class="tree-name">${escHtml(t("catalog.all"))}</span>
+              <span class="tree-count">${tree.count}</span>
+            </button>
+          </div>
+        </li>
+        ${nodeHtml(tree, "")}
+      </ul>`;
+  }
+
+  function itemMatches(item) {
+    const cat = item.category || "";
+    if (activePath && !(cat === activePath || cat.startsWith(activePath + CAT_SEP))) return false;
+    const q = query.toLowerCase();
+    return !q || (item.name + " " + (item.description || "") + " " + cat).toLowerCase().includes(q);
+  }
 
   function currentItems() {
-    const q = query.toLowerCase();
-    return catalog.filter((i) =>
-      (activeCat === "" || (i.category || "") === activeCat) &&
-      (!q || (i.name + " " + (i.description || "") + " " + (i.category || "")).toLowerCase().includes(q))
-    );
+    const items = catalog.filter(itemMatches);
+    if (sortMode === "price-asc") items.sort((a, b) => (Number(a.pricePrint) || 0) - (Number(b.pricePrint) || 0));
+    else if (sortMode === "price-desc") items.sort((a, b) => (Number(b.pricePrint) || 0) - (Number(a.pricePrint) || 0));
+    return items;
+  }
+
+  function renderCrumbs() {
+    const parts = activePath ? activePath.split(CAT_SEP) : [];
+    let html = `<button type="button" class="crumb-link" data-crumb="">${escHtml(t("catalog.all"))}</button>`;
+    let acc = "";
+    parts.forEach((p, i) => {
+      acc = acc ? acc + CAT_SEP + p : p;
+      html += `<span class="crumb-sep">/</span>`;
+      if (i === parts.length - 1) html += `<span class="crumb-current">${escHtml(p)}</span>`;
+      else html += `<button type="button" class="crumb-link" data-crumb="${escHtml(acc)}">${escHtml(p)}</button>`;
+    });
+    crumbsEl.innerHTML = html;
+  }
+
+  function renderToolbar(items) {
+    renderCrumbs();
+    countEl.textContent = t("catalog.found").replace("{n}", String(items.length));
   }
 
   function rowHTML(item, i) {
@@ -400,8 +480,8 @@ function initCatalogWorkbench(catalog, social) {
       <button type="button" class="catalog-list-row" data-i="${i}">
         ${item.image ? `<img class="catalog-list-img" src="${item.image}" alt="">` : `<span class="catalog-list-icon">${item.icon || "🛒"}</span>`}
         <span class="catalog-list-name">
-          <strong>${item.name}</strong>
-          <small>${item.category || ""}</small>
+          <strong>${escHtml(item.name)}</strong>
+          <small>${escHtml(item.category || "")}</small>
         </span>
         <span class="catalog-list-price">${fmt(item.pricePrint)} ₽</span>
       </button>`;
@@ -410,7 +490,7 @@ function initCatalogWorkbench(catalog, social) {
   function render3d(item) {
     if (item.model) {
       preview3d.innerHTML = `
-        <model-viewer src="${item.model}" alt="${item.name}" camera-controls auto-rotate shadow-intensity="1" exposure="1.1"
+        <model-viewer src="${item.model}" alt="${escHtml(item.name)}" camera-controls auto-rotate shadow-intensity="1" exposure="1.1"
           style="width:100%;height:100%"></model-viewer>`;
     } else {
       preview3d.innerHTML = `<div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">🧊</span><span>${t("catalog.no3d")}</span></div>`;
@@ -420,10 +500,10 @@ function initCatalogWorkbench(catalog, social) {
   function renderDetails(item) {
     details.innerHTML = `
       <div class="details-head">
-        <h3>${item.name}</h3>
-        ${item.category ? `<span class="details-cat">${item.category}</span>` : ""}
+        <h3>${escHtml(item.name)}</h3>
+        ${item.category ? `<span class="details-cat">${escHtml(item.category)}</span>` : ""}
       </div>
-      <p class="details-desc">${item.description}</p>
+      <p class="details-desc">${escHtml(item.description)}</p>
       <div class="details-prices">
         <div class="cat-price-box"><span>${t("catalog.printPrice")}</span><strong>${fmt(item.pricePrint)} ₽</strong></div>
         <div class="cat-price-box"><span>${t("catalog.modelPrice")}</span><strong>${fmt(item.priceModel)} ₽</strong></div>
@@ -448,6 +528,7 @@ function initCatalogWorkbench(catalog, social) {
     const items = currentItems();
     empty.hidden = items.length > 0;
     list.innerHTML = items.map((item, i) => rowHTML(item, i)).join("");
+    renderToolbar(items);
 
     if (items.length === 0) {
       preview3d.innerHTML = `<div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">🧊</span><span>${t("catalog.select")}</span></div>`;
@@ -460,6 +541,16 @@ function initCatalogWorkbench(catalog, social) {
     selectItem(items[keep >= 0 ? keep : 0]);
   }
 
+  function selectPath(path) {
+    activePath = path;
+    if (path) {
+      const parts = path.split(CAT_SEP);
+      for (let i = parts.length; i >= 1; i--) openSet.add(parts.slice(0, i).join(CAT_SEP));
+    }
+    renderTree();
+    renderList();
+  }
+
   list.addEventListener("click", (e) => {
     const row = e.target.closest(".catalog-list-row");
     if (!row) return;
@@ -468,11 +559,27 @@ function initCatalogWorkbench(catalog, social) {
     if (item) selectItem(item);
   });
 
-  chipsWrap.addEventListener("click", (e) => {
-    const chip = e.target.closest(".chip");
-    if (!chip) return;
-    activeCat = chip.dataset.cat;
-    chipsWrap.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c === chip));
+  treeWrap.addEventListener("click", (e) => {
+    const toggle = e.target.closest(".tree-toggle");
+    if (toggle) {
+      const p = toggle.dataset.toggle;
+      if (openSet.has(p)) openSet.delete(p);
+      else openSet.add(p);
+      renderTree();
+      return;
+    }
+    const link = e.target.closest(".tree-link");
+    if (link) selectPath(link.dataset.cat || "");
+  });
+
+  crumbsEl.addEventListener("click", (e) => {
+    const crumb = e.target.closest(".crumb-link");
+    if (!crumb) return;
+    selectPath(crumb.dataset.crumb || "");
+  });
+
+  sortEl.addEventListener("change", () => {
+    sortMode = sortEl.value in SORT_ORDER ? sortEl.value : "pop";
     renderList();
   });
 
@@ -481,6 +588,7 @@ function initCatalogWorkbench(catalog, social) {
     renderList();
   });
 
+  renderTree();
   renderList();
 }
 
@@ -872,19 +980,31 @@ async function renderSite() {
             <p>${t("catalog.subtitle")}</p>
           </div>
           <input type="search" id="catalogSearch" class="catalog-search" placeholder="${t("catalog.search")}">
-          <div class="catalog-chips" id="catalogChips"></div>
-          <div class="catalog-list" id="catalogList"></div>
-          <div class="catalog-empty" id="catalogEmpty" hidden>${t("catalog.empty")}</div>
+          <nav class="catalog-tree" id="catalogTree" aria-label="${t("catalog.title")}"></nav>
         </aside>
 
         <div class="catalog-stage">
+          <div class="catalog-toolbar">
+            <nav class="catalog-crumbs" id="catalogCrumbs"></nav>
+            <span class="catalog-count" id="catalogCount"></span>
+            <span class="catalog-sort-label">${t("catalog.sort")}</span>
+            <select class="catalog-sort" id="catalogSort">
+              <option value="pop">${t("catalog.sortPopular")}</option>
+              <option value="price-asc">${t("catalog.sortPriceAsc")}</option>
+              <option value="price-desc">${t("catalog.sortPriceDesc")}</option>
+            </select>
+          </div>
+          <div class="catalog-list" id="catalogList"></div>
+          <div class="catalog-empty" id="catalogEmpty" hidden>${t("catalog.empty")}</div>
+        </div>
+
+        <aside class="catalog-details">
           <div class="catalog-3d" id="preview3d">
             <div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">🧊</span><span>${t("catalog.select")}</span></div>
           </div>
-        </div>
-
-        <aside class="catalog-details" id="previewDetails">
-          <div class="catalog-select-hint">${t("catalog.select")}</div>
+          <div class="catalog-details-body" id="previewDetails">
+            <div class="catalog-select-hint">${t("catalog.select")}</div>
+          </div>
         </aside>
       </section>
 

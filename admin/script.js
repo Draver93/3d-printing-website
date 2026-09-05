@@ -18,7 +18,7 @@ const SCHEMAS = {
     fields: [
       { key: "name", label: "Name", type: "text" },
       { key: "description", label: "Description", type: "textarea" },
-      { key: "category", label: "Category", type: "text" },
+      { key: "category", label: "Category (tree path, e.g. 'Home > Decor')", type: "text" },
       { key: "pricePrint", label: "Print price (₽)", type: "number" },
       { key: "priceModel", label: "Model price (₽)", type: "number" },
       { key: "model", label: "3D model file (GLB/GLTF URL)", type: "text" },
