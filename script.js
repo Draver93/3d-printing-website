@@ -317,12 +317,12 @@ function initCatalog(catalog, social) {
           <a class="btn-buy" href="${social.whatsapp}?text=${encodeURIComponent("Hi, I want to buy the 3D model: " + item.name)}" target="_blank">💾 ${t("catalog.buy")}</a>
         </div>
       </div>`;
-    modal.hidden = false;
+    modal.classList.add("open");
     document.body.style.overflow = "hidden";
   }
 
   function closeModal() {
-    modal.hidden = true;
+    modal.classList.remove("open");
     document.body.style.overflow = "";
   }
 
@@ -341,7 +341,7 @@ function initCatalog(catalog, social) {
 
   document.getElementById("modalClose").addEventListener("click", closeModal);
   modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
   renderGrid();
 }
