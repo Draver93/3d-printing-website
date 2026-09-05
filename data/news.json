@@ -2,18 +2,21 @@
   {
     "title": "How to Measure a Part for Printing",
     "description": "Bring or send a photo of the broken part along with its dimensions. Use a ruler or calipers for accuracy — even rough measurements help us get started.",
+    "content": "Before ordering a 3D print of a part, accurate measurements make all the difference. The more precisely you can describe the part, the faster we can model and print it, and the closer the final result will be to what you expected.\n\nStart with a photo. Place the part on a flat surface next to a ruler or a familiar object (a coin, a charger) for scale. Make sure the photo is well-lit and taken straight on, not at an angle, so proportions stay true.\n\nThen measure the key dimensions with a ruler or calipers: length, width, height, and the diameter of any holes or shafts. Note the thickness of walls and any grooves, tabs, or slots that need to match exactly.\n\nIf the part is broken and you only have fragments, do not worry. We can work from a photo of the remaining pieces and your measurements. Even rough numbers help us get started and produce a working prototype quickly.",
     "date": "2026-09-01",
     "image": "images/news-measure.svg"
   },
   {
     "title": "PLA vs PETG: Which Material to Choose",
     "description": "PLA is great for decorative items and prototypes. PETG is stronger and more heat-resistant — better for parts that will be used outdoors or under stress.",
+    "content": "Choosing the right material can determine whether your printed part lasts a week or a decade. The two most common options in our workshop are PLA and PETG, and each has its place.\n\nPLA is the go-to for decorative items, prototypes, and anything that stays indoors. It is easy to print, available in a wide range of colours and finishes, and very affordable. Its main weakness is heat: PLA softens around 60\u00b0C, so it is a poor choice for parts that sit near engines, radiators, or in direct summer sun.\n\nPETG is stronger, tougher, and handles heat and impact much better. It withstands outdoor weather, resists most chemicals, and is a favourite for functional parts such as brackets, mounts, and protective covers. It costs a little more and takes a bit longer to print, but for parts that will actually be used, it is usually worth it.\n\nIf you are unsure which material fits your part, tell us how and where you plan to use it. We will point you to the right option and explain exactly what to expect from each.",
     "date": "2026-08-25",
     "image": "images/news-materials.svg"
   },
   {
     "title": "Why Local Printing Beats Online Orders",
     "description": "No shipping wait, no minimum order. Walk in, describe what you need, and get it printed the same day in most cases.",
+    "content": "Ordering a spare part online usually means long shipping delays, high delivery costs, and minimum order requirements. Printing locally in Suntar removes all three obstacles.\n\nNo shipping wait. Once we confirm your model, most parts are ready within a day. Instead of waiting weeks for a package to cross the country, you pick up your part in person or receive it via local delivery.\n\nNo minimum order. Many online services require a minimum spend or batch size. With us, a single small part is just as welcome as a full set. You pay for what you need, nothing more.\n\nDirect communication. You can bring in the broken part, describe the problem in your own words, and ask questions while we work. If something needs adjusting, we fix it on the spot and you see the result immediately.\n\nFor most projects, local printing is simply faster, cheaper, and much more flexible than ordering from the other side of the globe.",
     "date": "2026-08-18",
     "image": "images/news-local.svg"
   }

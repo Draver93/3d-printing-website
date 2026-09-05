@@ -28,7 +28,8 @@ const SCHEMAS = {
   news: { path: "data/news.json", label: "News & Tips", array: true,
     fields: [
       { key: "title", label: "Title", type: "text" },
-      { key: "description", label: "Description", type: "textarea" },
+      { key: "description", label: "Short description", type: "textarea" },
+      { key: "content", label: "Full text (paragraphs separated by blank lines)", type: "textarea" },
       { key: "image", label: "Image URL (optional)", type: "text" },
       { key: "date", label: "Date", type: "date" },
     ] },

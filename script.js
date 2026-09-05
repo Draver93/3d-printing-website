@@ -266,14 +266,73 @@ function initNewsCarousel() {
   nextBtn.addEventListener("click", () => { nextSlide(); start(); });
 
   let touchStartX = null;
+  let swipeSuppress = false;
   carousel.addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
   carousel.addEventListener("touchend", (e) => {
     if (touchStartX === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 40) (dx < 0 ? nextSlide() : prevSlide());
+    if (Math.abs(dx) > 40) {
+      swipeSuppress = true;
+      setTimeout(() => { swipeSuppress = false; }, 350);
+      (dx < 0 ? nextSlide() : prevSlide());
+    }
     touchStartX = null;
     start();
   }, { passive: true });
+
+  track.querySelectorAll(".news-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      if (swipeSuppress) return;
+      openNewsModal(parseInt(card.dataset.newsIndex));
+    });
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openNewsModal(parseInt(card.dataset.newsIndex));
+      }
+    });
+  });
+}
+
+function openNewsModal(index) {
+  const modal = document.getElementById("newsModal");
+  if (!modal) return;
+  const item = window.newsData && window.newsData[index];
+  if (!item) return;
+
+  const cover = document.getElementById("newsModalCover");
+  cover.innerHTML = item.image
+    ? `<img src="${item.image}" alt="${item.title}">`
+    : `<div class="news-cover-empty"><span>🖨</span></div>`;
+
+  document.getElementById("newsModalDate").textContent = item.date;
+  document.getElementById("newsModalTitle").textContent = item.title;
+  document.getElementById("newsModalContent").innerHTML = (item.content || item.description || "")
+    .split(/\n{2,}/)
+    .map((para) => `<p>${para.trim()}</p>`)
+    .join("");
+
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  document.getElementById("newsModalTitle").focus({ preventScroll: true });
+}
+
+function closeNewsModal() {
+  const modal = document.getElementById("newsModal");
+  if (!modal) return;
+  modal.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+
+function initNewsModal() {
+  const modal = document.getElementById("newsModal");
+  if (!modal) return;
+  modal.querySelectorAll("[data-news-close]").forEach((el) => {
+    el.addEventListener("click", closeNewsModal);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !modal.hidden) closeNewsModal();
+  });
 }
 
 function initCatalogWorkbench(catalog, social) {
@@ -587,14 +646,15 @@ async function renderSite() {
         <button type="button" class="carousel-arrow carousel-prev" aria-label="${t("news.prev")}">❮</button>
         <div class="carousel-viewport">
           <div class="carousel-track" id="newsTrack">
-            ${news.map((item) => `
+            ${news.map((item, i) => `
               <div class="news-slide">
-                <article class="news-card">
+                <article class="news-card" role="button" tabindex="0" aria-label="${t("news.readArticle")}: ${item.title}" data-news-index="${i}">
                   ${item.image ? `<div class="news-cover"><img src="${item.image}" alt="${item.title}" loading="lazy"></div>` : `<div class="news-cover news-cover-empty"><span>🖨</span></div>`}
                   <div class="news-body">
                     <div class="date">${item.date}</div>
                     <h3>${item.title}</h3>
                     <p>${item.description}</p>
+                    <span class="news-read-more">${t("news.readMore")} →</span>
                   </div>
                 </article>
               </div>
@@ -603,6 +663,18 @@ async function renderSite() {
         </div>
         <button type="button" class="carousel-arrow carousel-next" aria-label="${t("news.next")}">❯</button>
         <div class="carousel-dots" id="newsDots"></div>
+      </div>
+      <div class="news-modal" id="newsModal" hidden>
+        <div class="news-modal-backdrop" data-news-close></div>
+        <div class="news-modal-card" role="dialog" aria-modal="true" aria-labelledby="newsModalTitle">
+          <button type="button" class="news-modal-close" data-news-close aria-label="${t("news.close")}">✕</button>
+          <div class="news-modal-cover" id="newsModalCover"></div>
+          <div class="news-modal-head">
+            <div class="date" id="newsModalDate"></div>
+            <h3 id="newsModalTitle"></h3>
+          </div>
+          <div class="news-modal-content" id="newsModalContent"></div>
+        </div>
       </div>
     </div>
 
@@ -737,7 +809,9 @@ async function renderSite() {
   `;
 
   setTimeout(initMap, 100);
+  window.newsData = news;
   initNewsCarousel();
+  initNewsModal();
   initTestimonials();
   initCatalogWorkbench(catalog, social);
   initCatalogRequestForm(social.contactEmail, materials, social);
