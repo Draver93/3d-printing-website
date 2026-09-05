@@ -150,15 +150,6 @@
     "subtitle": "We are located in Suntar, Sakha Republic."
   },
   "request": {
-    "title": "Send a Request by Email",
-    "subtitle": "Fill in the form and we'll reply as soon as possible.",
-    "name": "Your name",
-    "contact": "Email or phone",
-    "message": "Describe what you need",
-    "send": "Send Request",
-    "sending": "Sending...",
-    "required": "Please fill in all fields.",
-    "success": "Thank you! Your request has been sent. We'll get back to you soon.",
-    "error": "Sorry, something went wrong. Please try again or write to us on WhatsApp."
+    "required": "Please fill in all fields."
   }
 }
