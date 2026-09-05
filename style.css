@@ -158,6 +158,25 @@ body.dark input[type="number"] {
 
 .btn-cta:hover { background: var(--primary-dark); }
 
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #fff;
+  padding: 0.7rem 1.75rem;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
 .nav-toggle {
   display: none;
   background: transparent;

@@ -2,8 +2,8 @@ const app = document.getElementById("app");
 let currentLang = ["en", "ru", "sah"].includes(localStorage.getItem("lang")) ? localStorage.getItem("lang") : "en";
 let translations = {};
 
-const NAV_SECTIONS = ["home", "catalog", "gallery", "news", "faq", "track"];
-const SCROLL_ORDER = ["home", "stats", "gallery", "process", "news", "testimonials", "faq", "track", "map", "contact"];
+const NAV_SECTIONS = ["home", "gallery", "news", "faq", "catalog", "track"];
+const SCROLL_ORDER = ["home", "stats", "gallery", "process", "news", "testimonials", "faq", "map", "contact"];
 let currentView = "home";
 
 async function loadLang(lang) {
@@ -51,8 +51,8 @@ function setNavActive(id) {
 }
 
 function updateActiveNav() {
-  if (currentView === "catalog") {
-    setNavActive("catalog");
+  if (currentView !== "home") {
+    setNavActive(currentView);
     return;
   }
   let current = "home";
@@ -66,15 +66,17 @@ function updateActiveNav() {
   setNavActive(current);
 }
 
-function switchView(showCatalog) {
+function switchView(view) {
   const homeView = document.getElementById("view-home");
   const catalogView = document.getElementById("view-catalog");
-  if (!homeView || !catalogView) return;
-  homeView.classList.toggle("active", !showCatalog);
-  catalogView.classList.toggle("active", showCatalog);
-  currentView = showCatalog ? "catalog" : "home";
-  if (showCatalog) {
-    setNavActive("catalog");
+  const trackView = document.getElementById("view-track");
+  if (!homeView || !catalogView || !trackView) return;
+  homeView.classList.toggle("active", view === "home");
+  catalogView.classList.toggle("active", view === "catalog");
+  trackView.classList.toggle("active", view === "track");
+  currentView = view === "catalog" || view === "track" ? view : "home";
+  if (currentView !== "home") {
+    setNavActive(currentView);
     if (window.scrollY) window.scrollTo(0, 0);
   } else {
     updateActiveNav();
@@ -83,14 +85,15 @@ function switchView(showCatalog) {
 
 function applyHash() {
   const hash = (location.hash || "").replace("#", "");
-  if (hash === "catalog") { switchView(true); return; }
+  if (hash === "catalog") { switchView("catalog"); return; }
+  if (hash === "track") { switchView("track"); return; }
   if (hash === "catalog-request") {
-    switchView(true);
+    switchView("catalog");
     const el = document.getElementById("catalogRequest");
     if (el) el.scrollIntoView();
     return;
   }
-  switchView(false);
+  switchView("home");
   if (hash) {
     const el = document.getElementById(hash);
     if (el) { el.scrollIntoView(); return; }
@@ -645,6 +648,9 @@ function initOrderModal(email, social) {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !modal.hidden) close();
   });
+  window.addEventListener("hashchange", () => {
+    if (!modal.hidden) close();
+  }, { passive: true });
 
   window._orderModalClose = close;
 }
@@ -987,18 +993,6 @@ async function renderSite() {
       </div>
     </div>
 
-    <div class="track-section" id="track">
-      <h2 class="section-title">${t("track.title")}</h2>
-      <p class="section-subtitle">${t("track.subtitle")}</p>
-      <div class="track-box">
-        <form id="trackForm" class="track-form" novalidate>
-          <input type="text" id="trackInput" placeholder="${t("track.inputPlaceholder")}" autocomplete="off" inputmode="text">
-          <button type="submit" class="btn-primary">${t("track.button")}</button>
-        </form>
-        <div class="track-result" id="trackResult" hidden></div>
-      </div>
-    </div>
-
     <div class="map-section" id="map">
       <h2 class="section-title">${t("map.title")}</h2>
       <p class="section-subtitle">${t("map.subtitle")}</p>
@@ -1061,6 +1055,20 @@ async function renderSite() {
             <p>${t("catalog.requestSubtitle")}</p>
           </div>
           <button type="button" class="btn-primary" id="openCustomRequest">${t("catalog.orderStart")}</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="view" id="view-track">
+      <section class="track-section" id="track">
+        <h2 class="section-title">${t("track.title")}</h2>
+        <p class="section-subtitle">${t("track.subtitle")}</p>
+        <div class="track-box">
+          <form id="trackForm" class="track-form" novalidate>
+            <input type="text" id="trackInput" placeholder="${t("track.inputPlaceholder")}" autocomplete="off" inputmode="text">
+            <button type="submit" class="btn-primary">${t("track.button")}</button>
+          </form>
+          <div class="track-result" id="trackResult" hidden></div>
         </div>
       </section>
     </div>
