@@ -1,5 +1,5 @@
 const app = document.getElementById("app");
-let currentLang = localStorage.getItem("lang") || "en";
+let currentLang = ["en", "ru", "sah"].includes(localStorage.getItem("lang")) ? localStorage.getItem("lang") : "en";
 let translations = {};
 
 async function loadLang(lang) {
