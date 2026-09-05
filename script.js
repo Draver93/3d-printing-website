@@ -653,7 +653,7 @@ async function renderSite() {
                   <div class="news-body">
                     <div class="date">${item.date}</div>
                     <h3>${item.title}</h3>
-                    <p>${item.description}</p>
+                    <p class="news-excerpt">${item.description}</p>
                     <span class="news-read-more">${t("news.readMore")} →</span>
                   </div>
                 </article>
