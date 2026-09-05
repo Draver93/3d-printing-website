@@ -99,11 +99,36 @@
     "modelPrice": "3D Model",
     "select": "Select a model from the catalog",
     "no3d": "No 3D preview available for this model yet.",
-    "empty": "No models match your search."
+    "empty": "No models match your search.",
+    "requestTitle": "Request a Custom Model",
+    "requestSubtitle": "Don't see what you need? Describe a custom part or model and we'll get back to you.",
+    "reqName": "Your name",
+    "reqContact": "Contact (WhatsApp / phone / email)",
+    "reqContactPlaceholder": "e.g. +7 900 000 00 00",
+    "reqPurpose": "What is this for?",
+    "reqPurposePlaceholder": "e.g. spare part, gift, phone stand",
+    "reqMaterial": "Material",
+    "reqMaterialHint": "Best for",
+    "materialGuide": "Which material suits what?",
+    "reqDescription": "Description of your request",
+    "reqDescriptionPlaceholder": "Describe the part: purpose, dimensions, quantity, any details...",
+    "reqAttachments": "Attachments (STL, OBJ, 3MF, STEP, photos)",
+    "reqAttachmentsHint": "You can attach a 3D file or a photo. They'll be listed in your request.",
+    "reqRemove": "Remove file",
+    "reqSend": "Send request",
+    "reqSending": "Sending...",
+    "reqSuccess": "Request collected. Send the details and files to us on WhatsApp:",
+    "reqError": "Could not send the email, but your request is ready:",
+    "reqWhatsapp": "Send via WhatsApp"
   },
   "news": {
     "title": "News & Tips",
     "subtitle": "Helpful information about 3D printing and our services."
+  },
+  "ctaCatalog": {
+    "title": "Need a specific model?",
+    "text": "Pick a ready-to-print model from the catalog, or describe exactly what you need — size, material, purpose — and we'll print it for you.",
+    "button": "Request a model"
   },
   "cta": {
     "title": "Ready to Get Started?",

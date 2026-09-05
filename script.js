@@ -3,7 +3,7 @@ let currentLang = ["en", "ru", "sah"].includes(localStorage.getItem("lang")) ? l
 let translations = {};
 
 const NAV_SECTIONS = ["home", "services", "catalog", "gallery", "news", "faq"];
-const SCROLL_ORDER = ["home", "services", "process", "stats", "why", "materials", "pricing", "gallery", "testimonials", "faq", "sizes", "map", "contact"];
+const SCROLL_ORDER = ["home", "stats", "gallery", "services", "process", "why", "materials", "pricing", "news", "testimonials", "faq", "sizes", "map", "contact"];
 let currentView = "home";
 
 async function loadLang(lang) {
@@ -84,6 +84,12 @@ function switchView(showCatalog) {
 function applyHash() {
   const hash = (location.hash || "").replace("#", "");
   if (hash === "catalog") { switchView(true); return; }
+  if (hash === "catalog-request") {
+    switchView(true);
+    const el = document.getElementById("catalogRequest");
+    if (el) el.scrollIntoView();
+    return;
+  }
   switchView(false);
   if (hash) {
     const el = document.getElementById(hash);
@@ -401,6 +407,117 @@ function initCatalogWorkbench(catalog, social) {
   renderList();
 }
 
+function initCatalogRequestForm(email, materials, social) {
+  const form = document.getElementById("catalogRequestForm");
+  if (!form) return;
+
+  const materialSelect = document.getElementById("reqMaterial");
+  const materialHint = document.getElementById("materialHint");
+  const fileInput = document.getElementById("reqFiles");
+  const fileList = document.getElementById("fileList");
+  const status = document.getElementById("catalogReqStatus");
+  const submitBtn = document.getElementById("catalogReqSubmit");
+  let files = [];
+
+  function updateMaterialHint() {
+    const m = materials.find((x) => x.name === materialSelect.value);
+    if (m && materialHint) materialHint.textContent = t("catalog.reqMaterialHint") + ": " + m.bestFor;
+  }
+  updateMaterialHint();
+  materialSelect.addEventListener("change", updateMaterialHint);
+
+  function renderFiles() {
+    fileList.innerHTML = files.map((f, i) =>
+      `<span class="file-chip">📎 ${f.name}<button type="button" data-f="${i}" aria-label="${t("catalog.reqRemove")}">✕</button></span>`
+    ).join("");
+    fileList.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        files.splice(Number(btn.dataset.f), 1);
+        renderFiles();
+      });
+    });
+  }
+
+  fileInput.addEventListener("change", () => {
+    for (const f of fileInput.files) {
+      if (!files.some((x) => x.name === f.name && x.size === f.size)) files.push(f);
+    }
+    fileInput.value = "";
+    renderFiles();
+  });
+
+  function waText(values) {
+    return [
+      "New custom request",
+      "Name: " + values.name,
+      "Contact: " + values.contact,
+      "For: " + (values.purpose || "-"),
+      "Material: " + values.material,
+      "Details:",
+      values.description,
+      "Files: " + (files.map((f) => f.name).join(", ") || "none"),
+    ].join("\n");
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = form.name.value.trim();
+    const contact = form.contact.value.trim();
+    const description = form.description.value.trim();
+    if (!name || !contact || !description) {
+      status.hidden = false;
+      status.className = "request-status error";
+      status.textContent = t("request.required");
+      return;
+    }
+
+    const waLink = `${social.whatsapp}?text=${encodeURIComponent(waText({ name, contact, purpose: form.purpose.value.trim(), material: materialSelect.value, description }))}`;
+    const handoff = `<a class="handoff" href="${waLink}" target="_blank">📲 ${t("catalog.reqWhatsapp")}</a>`;
+
+    status.hidden = false;
+    status.className = "request-status success";
+    status.innerHTML = `${t("catalog.reqSuccess")} ${handoff}`;
+    submitBtn.disabled = true;
+    submitBtn.textContent = t("catalog.reqSending");
+
+    if (email) {
+      try {
+        const res = await fetch("https://formsubmit.co/ajax/" + email, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            name,
+            contact,
+            purpose: form.purpose.value.trim(),
+            material: materialSelect.value,
+            description,
+            files: files.map((f) => f.name).join(", "),
+            _subject: `Custom model request - Suntar-Plastic (${name})`,
+            _captcha: "false",
+            _honey: form.querySelector('[name="_honey"]').value,
+            _template: "table",
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!(res.ok && data.success !== false)) {
+          status.className = "request-status error";
+          status.innerHTML = `${t("catalog.reqError")} ${handoff}`;
+        }
+      } catch (err) {
+        status.className = "request-status error";
+        status.innerHTML = `${t("catalog.reqError")} ${handoff}`;
+      }
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = t("catalog.reqSend");
+    form.reset();
+    files = [];
+    renderFiles();
+    updateMaterialHint();
+  });
+}
+
 function updateThemeBtn(btn) {
   btn.textContent = document.body.classList.contains("dark") ? "☀" : "🌙";
 }
@@ -441,6 +558,34 @@ async function renderSite() {
       <div class="hero-visual"><div class="hero-icon">🖨</div></div>
     </div>
 
+    <div class="stats-bar" id="stats">
+      ${[1, 2, 3, 4].map((i) => `
+        <div class="stat-item">
+          <div class="value">${t("stats.stat" + i + ".value")}</div>
+          <div class="label">${t("stats.stat" + i + ".label")}</div>
+        </div>
+      `).join("")}
+    </div>
+
+    <div class="gallery-section" id="gallery">
+      <h2 class="section-title">${t("gallery.title")}</h2>
+      <p class="section-subtitle">${t("gallery.subtitle")}</p>
+      <div class="gallery-grid">
+        ${gallery.map((item) => `
+          <div class="gallery-card">
+            ${item.image ? `<img src="${item.image}" alt="${item.title}">` : '<div class="gallery-photo-placeholder">🖼</div>'}
+            <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
+    <div class="request-band">
+      <h2>${t("ctaCatalog.title")}</h2>
+      <p>${t("ctaCatalog.text")}</p>
+      <a href="#catalog-request" class="btn-primary">${t("ctaCatalog.button")}</a>
+    </div>
+
     <div class="services-section" id="services">
       <h2 class="section-title">${t("services.title")}</h2>
       <p class="section-subtitle">${t("services.subtitle")}</p>
@@ -468,15 +613,6 @@ async function renderSite() {
           </div>
         `).join("")}
       </div>
-    </div>
-
-    <div class="stats-bar" id="stats">
-      ${[1, 2, 3, 4].map((i) => `
-        <div class="stat-item">
-          <div class="value">${t("stats.stat" + i + ".value")}</div>
-          <div class="label">${t("stats.stat" + i + ".label")}</div>
-        </div>
-      `).join("")}
     </div>
 
     <div class="why-section" id="why">
@@ -550,14 +686,15 @@ async function renderSite() {
       </div>
     </div>
 
-    <div class="gallery-section" id="gallery">
-      <h2 class="section-title">${t("gallery.title")}</h2>
-      <p class="section-subtitle">${t("gallery.subtitle")}</p>
-      <div class="gallery-grid">
-        ${gallery.map((item) => `
-          <div class="gallery-card">
-            ${item.image ? `<img src="${item.image}" alt="${item.title}">` : '<div class="gallery-photo-placeholder">🖼</div>'}
-            <div class="info"><h3>${item.title}</h3><p>${item.description}</p></div>
+    <div class="news-section" id="news">
+      <h2 class="section-title">${t("news.title")}</h2>
+      <p class="section-subtitle">${t("news.subtitle")}</p>
+      <div class="news-grid">
+        ${news.map((item) => `
+          <div class="news-card">
+            <div class="date">${item.date}</div>
+            <h3>${item.title}</h3>
+            <p>${item.description}</p>
           </div>
         `).join("")}
       </div>
@@ -671,6 +808,51 @@ async function renderSite() {
           <div class="catalog-select-hint">${t("catalog.select")}</div>
         </aside>
       </section>
+
+      <section class="catalog-request" id="catalogRequest">
+        <h2 class="section-title">${t("catalog.requestTitle")}</h2>
+        <p class="section-subtitle">${t("catalog.requestSubtitle")}</p>
+        <div class="catalog-request-card">
+          <form id="catalogRequestForm" class="request-form" novalidate>
+            <div class="request-field">
+              <label for="reqNameInput">${t("catalog.reqName")}</label>
+              <input id="reqNameInput" name="name" type="text" required>
+            </div>
+            <div class="request-field">
+              <label for="reqContactInput">${t("catalog.reqContact")}</label>
+              <input id="reqContactInput" name="contact" type="text" placeholder="${t("catalog.reqContactPlaceholder")}" required>
+            </div>
+            <div class="request-field">
+              <label for="reqPurpose">${t("catalog.reqPurpose")}</label>
+              <input id="reqPurpose" name="purpose" type="text" placeholder="${t("catalog.reqPurposePlaceholder")}">
+            </div>
+            <div class="request-field">
+              <label for="reqMaterial">${t("catalog.reqMaterial")}</label>
+              <select id="reqMaterial" name="material">
+                ${materials.map((m) => `<option value="${m.name}">${m.icon} ${m.name}</option>`).join("")}
+              </select>
+              <div class="material-hint" id="materialHint"></div>
+              <details class="material-guide">
+                <summary>${t("catalog.materialGuide")}</summary>
+                ${materials.map((m) => `<div class="material-guide-row"><strong>${m.icon} ${m.name}</strong><span>${m.bestFor}</span></div>`).join("")}
+              </details>
+            </div>
+            <div class="request-field full">
+              <label for="reqDescription">${t("catalog.reqDescription")}</label>
+              <textarea id="reqDescription" name="description" rows="5" placeholder="${t("catalog.reqDescriptionPlaceholder")}" required></textarea>
+            </div>
+            <div class="request-field full">
+              <label for="reqFiles">${t("catalog.reqAttachments")}</label>
+              <input type="file" id="reqFiles" name="files" multiple accept=".stl,.obj,.3mf,.step,.stp,.png,.jpg,.jpeg,.webp">
+              <div class="file-list" id="fileList"></div>
+              <div class="material-hint">${t("catalog.reqAttachmentsHint")}</div>
+            </div>
+            <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+            <button type="submit" class="btn-primary" id="catalogReqSubmit">${t("catalog.reqSend")}</button>
+            <div class="request-status" id="catalogReqStatus" hidden></div>
+          </form>
+        </div>
+      </section>
     </div>
 
     </div>
@@ -681,6 +863,7 @@ async function renderSite() {
   initRequestForm(social.contactEmail);
   initTestimonials();
   initCatalogWorkbench(catalog, social);
+  initCatalogRequestForm(social.contactEmail, materials, social);
   applyHash();
 }
 
