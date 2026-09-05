@@ -520,10 +520,24 @@ async function renderSite() {
       </div>
     </div>
 
+    <div class="process-section" id="process">
+      <h2 class="section-title">${t("process.title")}</h2>
+      <p class="section-subtitle">${t("process.subtitle")}</p>
+      <div class="process-grid">
+        ${[1, 2, 3, 4].map((i) => `
+          <div class="process-step">
+            <div class="num">${i}</div>
+            <h4>${t("process.step" + i + ".title")}</h4>
+            <p>${t("process.step" + i + ".desc")}</p>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
     <div class="request-band">
       <h2>${t("ctaCatalog.title")}</h2>
       <p>${t("ctaCatalog.text")}</p>
-      <a href="#catalog-request" class="btn-primary">${t("ctaCatalog.button")}</a>
+      <a href="#catalog-request" class="btn-primary btn-band">${t("ctaCatalog.button")}</a>
     </div>
 
     <div class="services-section" id="services">
@@ -536,20 +550,6 @@ async function renderSite() {
             <h3>${s.title}</h3>
             <p>${s.description}</p>
             <a href="${social.whatsapp}?text=${encodeURIComponent("Hi, I need: " + s.title)}" target="_blank" class="card-cta">${t("nav.quote")}</a>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-
-    <div class="process-section" id="process">
-      <h2 class="section-title">${t("process.title")}</h2>
-      <p class="section-subtitle">${t("process.subtitle")}</p>
-      <div class="process-grid">
-        ${[1, 2, 3, 4].map((i) => `
-          <div class="process-step">
-            <div class="num">${i}</div>
-            <h4>${t("process.step" + i + ".title")}</h4>
-            <p>${t("process.step" + i + ".desc")}</p>
           </div>
         `).join("")}
       </div>
