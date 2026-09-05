@@ -495,13 +495,13 @@ function initCatalogWorkbench(catalog, social) {
 
   function render3d(item) {
     if (item.model) {
-      preview3d.classList.add("has-model");
       preview3d.innerHTML = `
         <model-viewer src="${item.model}" alt="${escHtml(item.name)}" camera-controls auto-rotate shadow-intensity="1" exposure="1.1"
           style="width:100%;height:100%"></model-viewer>`;
+    } else if (item.image) {
+      preview3d.innerHTML = `<img class="catalog-3d-img" src="${item.image}" alt="${escHtml(item.name)}">`;
     } else {
-      preview3d.classList.remove("has-model");
-      preview3d.innerHTML = `<div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">🧊</span><span>${t("catalog.no3d")}</span></div>`;
+      preview3d.innerHTML = `<div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">${item.icon || "🧊"}</span><span>${escHtml(item.name)}</span></div>`;
     }
   }
 
@@ -540,7 +540,6 @@ function initCatalogWorkbench(catalog, social) {
     renderToolbar(items);
 
     if (items.length === 0) {
-      preview3d.classList.remove("has-model");
       preview3d.innerHTML = `<div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">🧊</span><span>${t("catalog.select")}</span></div>`;
       details.innerHTML = `<div class="catalog-select-hint">${t("catalog.select")}</div>`;
       selectedName = "";
