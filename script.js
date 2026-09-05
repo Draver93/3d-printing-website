@@ -501,7 +501,7 @@ function initCatalogWorkbench(catalog, social) {
     } else if (item.image) {
       preview3d.innerHTML = `<img class="catalog-3d-img" src="${item.image}" alt="${escHtml(item.name)}">`;
     } else {
-      preview3d.innerHTML = `<div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">${item.icon || "🧊"}</span><span>${escHtml(item.name)}</span></div>`;
+      preview3d.innerHTML = `<div class="catalog-3d-placeholder"><span class="catalog-3d-emoji">${item.icon || "🧊"}</span><span class="catalog-3d-caption">${t("catalog.no3d")}</span></div>`;
     }
   }
 
