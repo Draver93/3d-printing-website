@@ -805,7 +805,7 @@ async function publish() {
   setStatus("Публикуем на GitHub...", "info");
   $("#publishBtn").disabled = true;
   try {
-    await commitBatch(files, "Обновление сайта через админ-панель");
+    await commitBatch(files, "Site update via admin panel");
     dirty.clear();
     pendingUploads.clear();
     updateDirtyUi(true);
