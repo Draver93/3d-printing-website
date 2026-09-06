@@ -180,7 +180,7 @@ const I18N_LABELS = {
   "catalog.reqSend": "Кнопка «Отправить»",
   "catalog.reqSending": "Кнопка «Отправка...»",
   "catalog.reqSent": "Кнопка «Отправлено»",
-  "catalog.reqSuccess": "Подтверждение успешной отправки",
+  "catalog.reqEmailNote": "Примечание «отправлено на почту»",
   "catalog.reqError": "Сообщение об ошибке отправки",
   "catalog.reqWhatsapp": "Кнопка «Отправить через WhatsApp»",
   "catalog.reqIdLabel": "Подпись «ID заявки»",

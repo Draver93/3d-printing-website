@@ -1177,15 +1177,32 @@ main { flex: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; width: 100
 
 .file-chip button:hover { color: #dc2626; }
 
+.request-handoff { margin-top: 0.6rem; }
+
 .handoff {
-  display: inline-block;
-  margin-left: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.75rem 1.2rem;
+  border-radius: 8px;
+  background: #25d366;
+  color: #fff;
   font-weight: 700;
-  color: var(--primary);
-  text-decoration: underline;
+  font-size: 0.95rem;
+  text-decoration: none;
 }
 
-.handoff:hover { color: var(--primary-dark); }
+.handoff:hover { background: #1da851; color: #fff; }
+
+.request-email-state {
+  margin-top: 0.55rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.request-email-state.request-email-error { color: #991b1b; font-weight: 600; }
 
 /* ===== NEWS ===== */
 .news-section { padding: 3rem 0; }
