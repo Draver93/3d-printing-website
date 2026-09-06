@@ -27,34 +27,6 @@
     "stat3": { "value": "100%", "label": "Custom Made" },
     "stat4": { "value": "4+", "label": "Material Types" }
   },
-  "pricing": {
-    "title": "Price Estimator",
-    "subtitle": "Get a rough idea of what your part will cost.",
-    "weightLabel": "Estimated weight (grams)",
-    "materialLabel": "Material",
-    "modelingLabel": "3D modeling needed?",
-    "yes": "Yes",
-    "no": "No",
-    "estimateBtn": "Estimate Price",
-    "resultTitle": "Estimated Price",
-    "oneTime": "one-time setup",
-    "perGram": "per gram",
-    "modeling": "modeling fee",
-    "then": "+",
-    "totalLabel": "Total estimate",
-    "register": "Register",
-    "notesTitle": "Notes",
-    "hint": "Enter the part details and press \u201cEstimate Price\u201d for a rough cost."
-  },
-  "materials": {
-    "title": "Material Comparison",
-    "subtitle": "Choose the right material for your part.",
-    "strength": "Strength",
-    "heatResistance": "Heat Resistance",
-    "flexibility": "Flexibility",
-    "bestFor": "Best for",
-    "recommended": "Recommended"
-  },
   "faq": {
     "title": "Frequently Asked Questions",
     "subtitle": "Answers to common questions about our service."
@@ -80,13 +52,6 @@
     "subtitle": "What people in our area say about us.",
     "prev": "Previous review",
     "next": "Next review"
-  },
-  "why": {
-    "title": "Why Choose Us",
-    "subtitle": "Local, fast, and affordable 3D printing.",
-    "point1": { "title": "Fast Turnaround", "desc": "Most parts printed and ready within 24 hours. No weeks of waiting for online orders." },
-    "point2": { "title": "No Minimum Order", "desc": "Need just one part? No problem. We don't require bulk orders." },
-    "point3": { "title": "Local in Yakutia", "desc": "Talk directly to the person printing your part. No call centers, no tickets. We are based in Suntar, Sakha Republic (Yakutia)." }
   },
   "gallery": {
     "title": "Gallery",

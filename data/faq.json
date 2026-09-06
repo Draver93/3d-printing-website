@@ -5,7 +5,7 @@
   },
   {
     "question": "What materials do you use?",
-    "answer": "We currently print with PLA, PETG, ABS, and TPU. Each has different properties — see the materials comparison section above."
+    "answer": "We currently print with PLA, PETG, ABS, and TPU. Each material has different properties — strength, heat resistance, and flexibility. Tell us what the part will be used for and we'll recommend the right one."
   },
   {
     "question": "Do you need a 3D file from me?",
@@ -13,7 +13,7 @@
   },
   {
     "question": "How much does it cost?",
-    "answer": "It depends on size, material, and whether modeling is needed. Use the price estimator above to get a rough idea, then message us on WhatsApp for an exact quote."
+    "answer": "It depends on size, material, and whether modeling is needed. Message us on WhatsApp with your part details and we'll give you an exact quote."
   },
   {
     "question": "Do you deliver?",

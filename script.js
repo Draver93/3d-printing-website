@@ -920,7 +920,6 @@ function initRequestTracker(requests) {
 async function renderSite() {
   const social = await loadJSON("data/social.json");
   const promo = await loadJSON("data/promo.json");
-  const materials = await loadJSON("data/materials.json");
   const faq = await loadJSON("data/faq.json");
   const testimonials = await loadJSON("data/testimonials.json");
   const gallery = await loadJSON("data/gallery.json");
