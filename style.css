@@ -1616,11 +1616,15 @@ footer { background: var(--footer-bg); color: var(--footer-text); padding: 2rem 
 .catalog-3d-img { width: 100%; height: 100%; object-fit: contain; }
 
 .catalog-3d model-viewer { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .catalog-details { flex-direction: column; padding: 1rem; text-align: center; }
+  .catalog-details { flex-direction: column; align-items: stretch; padding: 1rem; text-align: center; }
+  .catalog-details-body { width: 100%; min-width: 0; }
   .catalog-details .details-head { align-items: center; }
   .catalog-details .details-cat { align-self: center; }
   .catalog-details .details-desc { text-align: center; }
-  .catalog-details .details-prices { justify-content: center; max-width: 460px; margin: 0 auto; }
+  .catalog-details .details-prices { justify-content: center; max-width: 460px; margin: 0 auto; width: 100%; }
+  .cat-price-box { align-items: center; justify-content: center; flex-direction: row; gap: 0.35rem; }
+  .catalog-details .details-actions { flex: none; width: 100%; flex-direction: row; justify-content: center; }
+  .btn-order, .btn-buy { flex: 1 1 0; min-width: 0; }
   .catalog-select-hint { padding: 0.75rem; }
   .catalog-toolbar { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
   .catalog-count { order: 1; }
@@ -1661,4 +1665,7 @@ footer { background: var(--footer-bg); color: var(--footer-text); padding: 2rem 
   .map-container { height: 280px; }
   .order-modal-card { padding: 1.25rem; }
   .request-promo { padding: 1.25rem; }
+  .cat-price-box { flex-direction: column; }
+  .catalog-details .details-actions { flex-direction: column; }
+  .btn-order, .btn-buy { width: 100%; }
 }
