@@ -796,7 +796,6 @@ window.openOrderModal = function (context) {
     ].filter(Boolean).join("\n");
 
     const waLink = `${social.whatsapp}?text=${encodeURIComponent(waLines)}`;
-    const handoff = `<a class="handoff" href="${waLink}" target="_blank">📲 ${t("catalog.reqWhatsapp")}</a>`;
 
     statusEl.hidden = false;
     statusEl.className = "request-status success";
@@ -809,7 +808,10 @@ window.openOrderModal = function (context) {
         </div>
         <div class="request-id-hint">${t("catalog.reqIdHint").replace("{track}", '<a href="#track">').replace("{/track}", "</a>")}</div>
       </div>
-      ${t("catalog.reqSuccess")} ${handoff}`;
+      <div class="request-handoff">
+        <a class="handoff" href="${waLink}" target="_blank">📲 ${t("catalog.reqWhatsapp")}</a>
+      </div>
+      ${email ? `<div class="request-email-state" id="requestEmailState">${t("catalog.reqSending")}…</div>` : ""}`;
     lockForm();
 
     const idCopy = statusEl.querySelector("[data-copy-id]");
@@ -828,33 +830,37 @@ window.openOrderModal = function (context) {
     });
 
     if (email) {
+      const emailState = document.getElementById("requestEmailState");
       try {
+        const formData = new FormData();
+        formData.append("request_id", requestId);
+        formData.append("purpose", purposeLabel);
+        formData.append("item", context.name || "");
+        formData.append("price", context.price || "");
+        formData.append("name", name);
+        formData.append("contact", contact);
+        formData.append("message", message);
+        formData.append("files", attachments);
+        formData.append("_subject", `Request ${requestId} - Suntar-Plastic (${name})`);
+        formData.append("_captcha", "false");
+        formData.append("_honey", form.querySelector('[name="_honey"]').value);
+        formData.append("_template", "table");
+        for (const f of files) formData.append("attachment", f, f.name);
+
         const res = await fetch("https://formsubmit.co/ajax/" + email, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({
-            request_id: requestId,
-            purpose: purposeLabel,
-            item: context.name || "",
-            price: context.price || "",
-            name, contact, message,
-            files: attachments,
-            _subject: `Request ${requestId} - Suntar-Plastic (${name})`,
-            _captcha: "false",
-            _honey: form.querySelector('[name="_honey"]').value,
-            _template: "table",
-          }),
+          body: formData,
         });
         const data = await res.json().catch(() => ({}));
-        if (!(res.ok && data.success !== false)) {
+        if (res.ok && data.success !== false) {
+          if (emailState) emailState.textContent = "✓ " + t("catalog.reqEmailNote");
+        } else {
+          if (emailState) { emailState.textContent = t("catalog.reqError"); emailState.classList.add("request-email-error"); }
           unlockForm();
-          statusEl.className = "request-status error";
-          statusEl.innerHTML = `${t("catalog.reqError")} ${handoff}`;
         }
       } catch (err) {
+        if (emailState) { emailState.textContent = t("catalog.reqError"); emailState.classList.add("request-email-error"); }
         unlockForm();
-        statusEl.className = "request-status error";
-        statusEl.innerHTML = `${t("catalog.reqError")} ${handoff}`;
       }
     }
   });
