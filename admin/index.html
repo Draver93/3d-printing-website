@@ -1,42 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Suntar-Plastic Admin Dashboard</title>
+  <title>Администрирование — Suntar-Plastic</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
     <div class="header-inner">
-      <h1>Suntar<span>-Plastic</span> Admin</h1>
+      <div class="brand">
+        <span class="brand-mark">🖨</span>
+        <div>
+          <h1>Suntar-Plastic</h1>
+          <span class="brand-sub">Панель управления сайтом</span>
+        </div>
+      </div>
       <div class="header-actions">
-        <button class="btn-secondary" id="loadBtn">Load All</button>
-        <button class="btn-primary" id="saveBtn">Save All</button>
+        <a class="site-link" id="siteLink" hidden target="_blank" rel="noopener">Открыть сайт ↗</a>
+        <span class="dirty-pill" id="dirtyPill" hidden></span>
+        <button class="btn-secondary" id="refreshBtn">Загрузить заново</button>
+        <button class="btn-primary" id="publishBtn">Опубликовать всё</button>
       </div>
     </div>
   </header>
 
-  <main>
-    <div class="config-bar">
-      <div class="config-field">
-        <label>GitHub Token</label>
-        <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Разделы"></aside>
+    <main class="content">
+      <div class="page-head">
+        <h2 id="pageTitle"></h2>
+        <p id="pageSub"></p>
       </div>
-      <div class="config-field">
-        <label>Repo (owner/repo)</label>
-        <input type="text" id="repoInput" placeholder="username/3d-printing-website">
-      </div>
-      <div class="config-field">
-        <label>Branch</label>
-        <input type="text" id="branchInput" value="main">
-      </div>
-    </div>
-    <div class="status-bar" id="statusBar"></div>
+      <div class="status-bar" id="statusBar"></div>
+      <div class="form-panel" id="formPanel"></div>
+    </main>
+  </div>
 
-    <nav class="tab-bar" id="tabBar"></nav>
-    <div class="form-panel" id="formPanel"></div>
-  </main>
   <script src="script.js"></script>
 </body>
 </html>

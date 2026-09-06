@@ -1,244 +1,718 @@
+"use strict";
+
+/* Suntar-Plastic — админ-панель. Простое управление контентом сайта. */
+
 const GITHUB_API = "https://api.github.com";
+const LANGS = ["ru", "en", "sah"];
+const LANG_NAMES = { ru: "Русский", en: "English", sah: "Саха тыла" };
+
+/* ===== Разделы навигации ===== */
+
+const NAV = [
+  { section: "Каталог и работы", items: [
+    { type: "catalog", label: "Каталог моделей" },
+    { type: "gallery", label: "Галерея работ" },
+  ] },
+  { section: "Контент сайта", items: [
+    { type: "news", label: "Новости и советы" },
+    { type: "testimonials", label: "Отзывы" },
+    { type: "services", label: "Услуги" },
+    { type: "faq", label: "Вопросы и ответы" },
+    { type: "promo", label: "Акция" },
+  ] },
+  { section: "Материалы и цены", items: [
+    { type: "materials", label: "Материалы" },
+    { type: "pricing", label: "Калькулятор цены" },
+  ] },
+  { section: "Работа с заявками", items: [
+    { type: "requests", label: "Заявки клиентов" },
+  ] },
+  { section: "Контакты", items: [
+    { type: "social", label: "Соцсети и email" },
+  ] },
+  { section: "Тексты сайта", items: [
+    { type: "i18n", label: "Тексты и переводы" },
+  ] },
+  { section: "Система", items: [
+    { type: "connection", label: "Подключение к GitHub" },
+  ] },
+];
+
+/* ===== Схемы данных ===== */
 
 const SCHEMAS = {
-  services: { path: "data/services.json", label: "Services", array: true,
-    fields: [
-      { key: "title", label: "Title", type: "text" },
-      { key: "description", label: "Description", type: "textarea" },
-      { key: "icon", label: "Icon (emoji)", type: "text" },
-      { key: "link", label: "Link (optional)", type: "text" },
+  catalog: { path: "data/catalog.json", label: "Каталог моделей", array: true, fields: [
+    { key: "name", label: "Название", type: "text", required: true, placeholder: "Например: Подставка для телефона" },
+    { key: "category", label: "Категория", type: "text", required: true, placeholder: "Например: Дом > Декор", hint: "Путь по каталогу, уровни разделяйте знаком «>»" },
+    { key: "description", label: "Описание", type: "textarea" },
+    { key: "pricePrint", label: "Цена печати (₽)", type: "number" },
+    { key: "priceModel", label: "Цена 3D-модели (₽)", type: "number" },
+    { key: "model", label: "3D-модель для просмотра", type: "model", hint: "Файл .glb или .gltf. Посетители смогут посмотреть модель в 3D" },
+    { key: "image", label: "Фото", type: "image", hint: "Обычная фотография модели (необязательно)" },
+    { key: "icon", label: "Иконка (эмодзи)", type: "text", placeholder: "Например: 📱" },
+  ] },
+  gallery: { path: "data/gallery.json", label: "Галерея работ", array: true, fields: [
+    { key: "title", label: "Название", type: "text", required: true },
+    { key: "description", label: "Описание", type: "textarea" },
+    { key: "image", label: "Фото", type: "image" },
+  ] },
+  news: { path: "data/news.json", label: "Новости и советы", array: true, fields: [
+    { key: "title", label: "Заголовок", type: "text", required: true },
+    { key: "description", label: "Короткое описание (анонс)", type: "textarea" },
+    { key: "content", label: "Полный текст статьи", type: "textarea", hint: "Новые абзацы отделяйте пустой строкой" },
+    { key: "image", label: "Изображение", type: "image" },
+    { key: "date", label: "Дата публикации", type: "date", required: true },
+  ] },
+  testimonials: { path: "data/testimonials.json", label: "Отзывы", array: true, fields: [
+    { key: "name", label: "Имя", type: "text", required: true },
+    { key: "location", label: "Населённый пункт", type: "text", placeholder: "Например: с. Сунтар" },
+    { key: "rating", label: "Оценка (1–5)", type: "number", min: 1, max: 5 },
+    { key: "text", label: "Текст отзыва", type: "textarea", required: true },
+  ] },
+  services: { path: "data/services.json", label: "Услуги", array: true, fields: [
+    { key: "title", label: "Название услуги", type: "text", required: true },
+    { key: "description", label: "Описание", type: "textarea" },
+    { key: "icon", label: "Иконка (эмодзи)", type: "text" },
+    { key: "link", label: "Ссылка (необязательно)", type: "text" },
+  ] },
+  materials: { path: "data/materials.json", label: "Материалы", array: true, fields: [
+    { key: "name", label: "Название", type: "text", required: true },
+    { key: "icon", label: "Иконка (эмодзи)", type: "text" },
+    { key: "strength", label: "Прочность (1–5)", type: "number", min: 1, max: 5 },
+    { key: "heatResistance", label: "Термостойкость (1–5)", type: "number", min: 1, max: 5 },
+    { key: "flexibility", label: "Гибкость (1–5)", type: "number", min: 1, max: 5 },
+    { key: "bestFor", label: "Лучше всего для", type: "text" },
+    { key: "recommended", label: "Пометить как «рекомендуемый»", type: "checkbox" },
+  ] },
+  faq: { path: "data/faq.json", label: "Вопросы и ответы", array: true, fields: [
+    { key: "question", label: "Вопрос", type: "textarea", required: true },
+    { key: "answer", label: "Ответ", type: "textarea", required: true },
+  ] },
+  promo: { path: "data/promo.json", label: "Акция", array: false, fields: [
+    { key: "active", label: "Акция включена", type: "checkbox" },
+    { key: "text", label: "Текст акции", type: "text" },
+    { key: "endDate", label: "Дата окончания", type: "date" },
+  ], nested: [] },
+  pricing: { path: "data/pricing.json", label: "Калькулятор цены", array: false, fields: [
+    { key: "basePrice", label: "Базовая цена (₽)", type: "number" },
+    { key: "modelingFee", label: "Плата за 3D-моделирование (₽)", type: "number" },
+  ], nested: [
+    { key: "materials", label: "Цены материалов", fields: [
+      { key: "name", label: "Материал", type: "text" },
+      { key: "pricePerGram", label: "Цена за грамм (₽)", type: "number" },
     ] },
-  gallery: { path: "data/gallery.json", label: "Gallery", array: true,
-    fields: [
-      { key: "title", label: "Title", type: "text" },
-      { key: "description", label: "Description", type: "textarea" },
-      { key: "image", label: "Image URL", type: "text" },
-    ] },
-  catalog: { path: "data/catalog.json", label: "Catalog (ready-to-print)", array: true,
-    fields: [
-      { key: "name", label: "Name", type: "text" },
-      { key: "description", label: "Description", type: "textarea" },
-      { key: "category", label: "Category (tree path, e.g. 'Home > Decor')", type: "text" },
-      { key: "pricePrint", label: "Print price (₽)", type: "number" },
-      { key: "priceModel", label: "Model price (₽)", type: "number" },
-      { key: "model", label: "3D model file (GLB/GLTF URL)", type: "text" },
-      { key: "icon", label: "Icon (emoji)", type: "text" },
-      { key: "image", label: "Image URL (optional)", type: "text" },
-    ] },
-  news: { path: "data/news.json", label: "News & Tips", array: true,
-    fields: [
-      { key: "title", label: "Title", type: "text" },
-      { key: "description", label: "Short description", type: "textarea" },
-      { key: "content", label: "Full text (paragraphs separated by blank lines)", type: "textarea" },
-      { key: "image", label: "Image URL (optional)", type: "text" },
-      { key: "date", label: "Date", type: "date" },
-    ] },
-  testimonials: { path: "data/testimonials.json", label: "Testimonials", array: true,
-    fields: [
-      { key: "name", label: "Name", type: "text" },
-      { key: "location", label: "Location", type: "text" },
-      { key: "rating", label: "Rating (1-5)", type: "number", min: 1, max: 5 },
-      { key: "text", label: "Review Text", type: "textarea" },
-    ] },
-  materials: { path: "data/materials.json", label: "Materials", array: true,
-    fields: [
-      { key: "name", label: "Name", type: "text" },
-      { key: "icon", label: "Icon", type: "text" },
-      { key: "strength", label: "Strength", type: "number", min: 1, max: 5 },
-      { key: "heatResistance", label: "Heat Res.", type: "number", min: 1, max: 5 },
-      { key: "flexibility", label: "Flexibility", type: "number", min: 1, max: 5 },
-      { key: "bestFor", label: "Best for", type: "text" },
-      { key: "recommended", label: "Recommended", type: "checkbox" },
-    ] },
-  pricing: { path: "data/pricing.json", label: "Pricing", array: false,
-    fields: [
-      { key: "basePrice", label: "Base price", type: "number" },
-      { key: "modelingFee", label: "Modeling fee", type: "number" },
-    ],
-    nested: [
-      { key: "materials", label: "Material prices", fields: [
-        { key: "name", label: "Material", type: "text" },
-        { key: "pricePerGram", label: "Price/gram", type: "number" },
-      ] },
-      { key: "notes", label: "Notes", simpleText: true },
-    ] },
-  faq: { path: "data/faq.json", label: "FAQ", array: true,
-    fields: [
-      { key: "question", label: "Question", type: "textarea" },
-      { key: "answer", label: "Answer", type: "textarea" },
-    ] },
-  promo: { path: "data/promo.json", label: "Promo", array: false,
-    fields: [
-      { key: "active", label: "Active", type: "checkbox" },
-      { key: "text", label: "Promo text", type: "text" },
-      { key: "endDate", label: "End date", type: "date" },
-    ] },
-  social: { path: "data/social.json", label: "Social Links", array: false,
-    fields: [
-      { key: "whatsapp", label: "WhatsApp URL", type: "text" },
-      { key: "instagram", label: "Instagram URL", type: "text" },
-      { key: "telegram", label: "Telegram URL", type: "text" },
-      { key: "contactEmail", label: "Contact email (for form)", type: "text" },
-    ] },
-  requests: { path: "data/requests.json", label: "Request Queue", array: true,
-    fields: [
-      { key: "id", label: "Request ID", type: "text" },
-      { key: "name", label: "Customer / request name", type: "text" },
-      { key: "status", label: "Status", type: "select", options: ["received", "printing", "ready", "done", "cancelled", "declined"] },
-      { key: "updatedAt", label: "Updated (date)", type: "date" },
-      { key: "note", label: "Note (shown to customer)", type: "textarea" },
-    ] },
+    { key: "notes", label: "Примечания к расчёту", simpleText: true },
+  ] },
+  requests: { path: "data/requests.json", label: "Заявки клиентов", array: true, fields: [
+    { key: "id", label: "ID заявки", type: "text", required: true, placeholder: "SP-2608-XXXX" },
+    { key: "name", label: "Имя клиента", type: "text" },
+    { key: "status", label: "Статус", type: "select", options: ["received", "printing", "ready", "done", "cancelled", "declined"], optionLabels: { received: "Получена", printing: "Печатается", ready: "Готова к выдаче", done: "Выполнена", cancelled: "Отменена", declined: "Отклонена" } },
+    { key: "updatedAt", label: "Дата обновления", type: "date" },
+    { key: "note", label: "Примечание (видит клиент)", type: "textarea", hint: "Например: «Можно забрать с 10 до 18»" },
+  ] },
+  social: { path: "data/social.json", label: "Контакты и соцсети", array: false, fields: [
+    { key: "whatsapp", label: "WhatsApp (ссылка для чата)", type: "text", placeholder: "https://wa.me/79XXXXXXXXX" },
+    { key: "instagram", label: "Instagram", type: "text" },
+    { key: "telegram", label: "Telegram", type: "text" },
+    { key: "contactEmail", label: "Email для форм на сайте", type: "text" },
+  ], nested: [] },
 };
+
+/* ===== Подписи для текстов сайта (переводов) ===== */
+
+const I18N_GROUP_LABELS = {
+  nav: "Меню", hero: "Главный экран", process: "Как это работает", stats: "Цифры на сайте",
+  pricing: "Калькулятор цены", materials: "Блок «Материалы»", faq: "Блок «Вопросы и ответы»",
+  track: "Отслеживание заявки", testimonials: "Блок «Отзывы»", why: "Блок «Почему мы»",
+  gallery: "Блок «Галерея»", catalog: "Каталог (кнопки и подписи)", news: "Блок «Новости»",
+  ctaCatalog: "Блок «Заказать модель»", cta: "Блок «Мы в соцсетях»", map: "Блок «Карта»",
+  request: "Форма заявки",
+};
+
+const I18N_LABELS = {
+  "nav.home": "Пункт меню «Главная»",
+  "nav.catalog": "Пункт меню «Каталог»",
+  "nav.gallery": "Пункт меню «Галерея»",
+  "nav.news": "Пункт меню «Новости»",
+  "nav.faq": "Пункт меню «Частые вопросы»",
+  "nav.track": "Пункт меню «Отследить заявку»",
+  "nav.quote": "Кнопка «Заказать модель»",
+  "hero.title": "Заголовок (первая часть)",
+  "hero.titleHighlight": "Заголовок (выделенная часть)",
+  "hero.subtitle": "Подзаголовок",
+  "process.title": "Заголовок блока",
+  "process.subtitle": "Подзаголовок блока",
+  "process.step1.title": "Шаг 1 — заголовок",
+  "process.step1.desc": "Шаг 1 — описание",
+  "process.step2.title": "Шаг 2 — заголовок",
+  "process.step2.desc": "Шаг 2 — описание",
+  "process.step3.title": "Шаг 3 — заголовок",
+  "process.step3.desc": "Шаг 3 — описание",
+  "process.step4.title": "Шаг 4 — заголовок",
+  "process.step4.desc": "Шаг 4 — описание",
+  "stats.stat1.value": "Цифра 1",
+  "stats.stat1.label": "Подпись к цифре 1",
+  "stats.stat2.value": "Цифра 2",
+  "stats.stat2.label": "Подпись к цифре 2",
+  "stats.stat3.value": "Цифра 3",
+  "stats.stat3.label": "Подпись к цифре 3",
+  "stats.stat4.value": "Цифра 4",
+  "stats.stat4.label": "Подпись к цифре 4",
+  "pricing.title": "Заголовок блока",
+  "pricing.subtitle": "Подзаголовок блока",
+  "pricing.weightLabel": "Подпись «Вес в граммах»",
+  "pricing.materialLabel": "Подпись «Материал»",
+  "pricing.modelingLabel": "Подпись «Нужно 3D-моделирование?»",
+  "pricing.yes": "Ответ «Да»",
+  "pricing.no": "Ответ «Нет»",
+  "pricing.estimateBtn": "Кнопка «Рассчитать цену»",
+  "pricing.resultTitle": "Заголовок результата",
+  "pricing.oneTime": "Подпись «разово»",
+  "pricing.perGram": "Подпись «за грамм»",
+  "pricing.modeling": "Подпись «за моделирование»",
+  "pricing.then": "Знак «плюс»",
+  "pricing.totalLabel": "Подпись «Итого»",
+  "pricing.register": "Кнопка «Записаться»",
+  "pricing.notesTitle": "Заголовок «Примечания»",
+  "pricing.hint": "Подсказка под калькулятором",
+  "materials.title": "Заголовок блока",
+  "materials.subtitle": "Подзаголовок блока",
+  "materials.strength": "Подпись «Прочность»",
+  "materials.heatResistance": "Подпись «Термостойкость»",
+  "materials.flexibility": "Подпись «Гибкость»",
+  "materials.bestFor": "Подпись «Лучше всего для»",
+  "materials.recommended": "Подпись «Рекомендуем»",
+  "faq.title": "Заголовок блока",
+  "faq.subtitle": "Подзаголовок блока",
+  "track.title": "Заголовок блока",
+  "track.subtitle": "Подзаголовок блока",
+  "track.inputPlaceholder": "Поле ввода ID (пример)",
+  "track.button": "Кнопка «Проверить»",
+  "track.updated": "Подпись «Обновлено»",
+  "track.notFound": "Сообщение «не найдено»",
+  "track.status.received": "Статус: получена",
+  "track.status.printing": "Статус: печатается",
+  "track.status.ready": "Статус: готова к выдаче",
+  "track.status.done": "Статус: выполнена",
+  "track.status.cancelled": "Статус: отменена",
+  "track.status.declined": "Статус: отклонена",
+  "testimonials.title": "Заголовок блока",
+  "testimonials.subtitle": "Подзаголовок блока",
+  "testimonials.prev": "Кнопка «Предыдущий отзыв»",
+  "testimonials.next": "Кнопка «Следующий отзыв»",
+  "why.title": "Заголовок блока",
+  "why.subtitle": "Подзаголовок блока",
+  "why.point1.title": "Пункт 1 — заголовок",
+  "why.point1.desc": "Пункт 1 — описание",
+  "why.point2.title": "Пункт 2 — заголовок",
+  "why.point2.desc": "Пункт 2 — описание",
+  "why.point3.title": "Пункт 3 — заголовок",
+  "why.point3.desc": "Пункт 3 — описание",
+  "gallery.title": "Заголовок блока",
+  "gallery.subtitle": "Подзаголовок блока",
+  "gallery.prev": "Кнопка «Предыдущие фото»",
+  "gallery.next": "Кнопка «Следующие фото»",
+  "catalog.title": "Заголовок блока",
+  "catalog.subtitle": "Подзаголовок блока",
+  "catalog.search": "Поле поиска (подсказка)",
+  "catalog.categories": "Кнопка «Категории»",
+  "catalog.all": "Пункт «Все»",
+  "catalog.print": "Кнопка «Заказать печать»",
+  "catalog.buy": "Кнопка «Купить модель»",
+  "catalog.printPrice": "Подпись «Печать»",
+  "catalog.modelPrice": "Подпись «3D-модель»",
+  "catalog.select": "Подсказка «Выберите модель»",
+  "catalog.no3d": "Подсказка «нет 3D-предпросмотра»",
+  "catalog.empty": "Сообщение «ничего не найдено»",
+  "catalog.requestTitle": "Заголовок «Заказать свою модель»",
+  "catalog.requestSubtitle": "Подзаголовок «Заказать свою модель»",
+  "catalog.reqName": "Поле «Ваше имя»",
+  "catalog.reqContact": "Поле «Контакт»",
+  "catalog.reqContactPlaceholder": "Поле «Контакт» (пример)",
+  "catalog.reqPurpose": "Поле «Для чего нужна деталь»",
+  "catalog.reqPurposePlaceholder": "Поле «Для чего» (пример)",
+  "catalog.reqMaterial": "Поле «Материал»",
+  "catalog.reqMaterialHint": "Подсказка к материалу",
+  "catalog.materialGuide": "Ссылка «Какой материал подойдёт»",
+  "catalog.reqDescription": "Поле «Описание заявки»",
+  "catalog.reqDescriptionPlaceholder": "Поле «Описание» (пример)",
+  "catalog.reqAttachments": "Подпись «Файлы»",
+  "catalog.reqAttachmentsHint": "Подсказка про файлы",
+  "catalog.reqRemove": "Кнопка «Убрать файл»",
+  "catalog.reqSend": "Кнопка «Отправить»",
+  "catalog.reqSending": "Кнопка «Отправка...»",
+  "catalog.reqSent": "Кнопка «Отправлено»",
+  "catalog.reqSuccess": "Подтверждение успешной отправки",
+  "catalog.reqError": "Сообщение об ошибке отправки",
+  "catalog.reqWhatsapp": "Кнопка «Отправить через WhatsApp»",
+  "catalog.reqIdLabel": "Подпись «ID заявки»",
+  "catalog.reqIdCopy": "Кнопка «Копировать»",
+  "catalog.reqIdCopied": "Кнопка «Скопировано»",
+  "catalog.reqIdHint": "Подсказка «Сохраните этот ID»",
+  "catalog.orderStart": "Кнопка «Начать заявку»",
+  "catalog.orderMessage": "Поле «Сообщение»",
+  "catalog.orderMessagePlaceholder": "Поле «Сообщение» (пример)",
+  "catalog.found": "Подпись «Найдено: {n}»",
+  "catalog.sort": "Подпись «Сортировка»",
+  "catalog.sortPopular": "Сортировка «По популярности»",
+  "catalog.sortPriceAsc": "Сортировка «Цена: по возрастанию»",
+  "catalog.sortPriceDesc": "Сортировка «Цена: по убыванию»",
+  "news.title": "Заголовок блока",
+  "news.subtitle": "Подзаголовок блока",
+  "news.prev": "Кнопка «Предыдущая статья»",
+  "news.next": "Кнопка «Следующая статья»",
+  "news.readMore": "Ссылка «Читать далее»",
+  "news.readArticle": "Кнопка «Открыть статью»",
+  "news.close": "Кнопка «Закрыть»",
+  "ctaCatalog.title": "Заголовок блока",
+  "ctaCatalog.text": "Текст блока",
+  "ctaCatalog.button": "Кнопка блока",
+  "cta.title": "Заголовок блока",
+  "cta.subtitle": "Подзаголовок блока",
+  "map.title": "Заголовок блока",
+  "map.subtitle": "Подзаголовок блока",
+  "request.required": "Сообщение «Заполните все поля»",
+};
+
+/* ===== Состояние ===== */
 
 let currentType = null;
 let loadedData = {};
+let dirty = new Set();
+let pendingUploads = new Map();
+let i18nEdits = { ru: null, en: null, sah: null };
+let i18nLang = "ru";
+
+/* ===== Утилиты ===== */
+
+const $ = (sel, root) => (root || document).querySelector(sel);
+
+function esc(str) {
+  return String(str ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function toB64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function flatten(obj, prefix, out) {
+  for (const key of Object.keys(obj)) {
+    const p = prefix ? prefix + "." + key : key;
+    if (obj[key] && typeof obj[key] === "object") flatten(obj[key], p, out);
+    else out[p] = obj[key];
+  }
+  return out;
+}
+
+function hydrate(map) {
+  const root = {};
+  for (const path of Object.keys(map)) {
+    const parts = path.split(".");
+    let node = root;
+    for (let i = 0; i < parts.length - 1; i++) {
+      node[parts[i]] = node[parts[i]] || {};
+      node = node[parts[i]];
+    }
+    node[parts[parts.length - 1]] = map[path];
+  }
+  return root;
+}
+
+function extFrom(name) {
+  const m = /\.([a-zA-Z0-9]+)$/.exec(name || "");
+  return m ? m[1].toLowerCase() : "bin";
+}
+
+function siteBase() {
+  const repo = getConfig().repo;
+  if (!repo || !repo.includes("/")) return "";
+  const [owner, name] = repo.split("/");
+  return `https://${owner}.github.io/${name}/`;
+}
+
+function ruError(msg) {
+  const m = String(msg || "");
+  if (/not found/i.test(m) || /404/i.test(m)) return "Репозиторий или файл не найден. Проверьте имя репозитория и токен.";
+  if (/Bad credentials|Credentials|401|403/i.test(m)) return "Неверный токен или нет прав на запись. Проверьте токен во вкладке «Подключение».";
+  if (/was pushed|422|failed to update/i.test(m)) return "В репозиторий только что внесли изменения. Нажмите «Загрузить заново» и попробуйте ещё раз.";
+  return m;
+}
+
+/* ===== Настройки (токен, репозиторий) ===== */
 
 function getConfig() {
+  const panel = document.getElementById("formPanel");
+  const val = (id, fb) => {
+    const el = panel ? panel.querySelector("#" + id) : null;
+    return el ? el.value.trim() : fb;
+  };
   return {
-    token: document.getElementById("tokenInput").value.trim(),
-    repo: document.getElementById("repoInput").value.trim(),
-    branch: document.getElementById("branchInput").value.trim() || "main",
+    token: val("connToken", localStorage.getItem("gh_token") || ""),
+    repo: val("connRepo", localStorage.getItem("gh_repo") || ""),
+    branch: val("connBranch", localStorage.getItem("gh_branch") || "main") || "main",
   };
 }
 
-function setStatus(msg, type) {
-  const bar = document.getElementById("statusBar");
-  bar.textContent = msg;
-  bar.className = "status-bar " + type;
+function saveConfig() {
+  const { token, repo, branch } = getConfig();
+  localStorage.setItem("gh_token", token);
+  localStorage.setItem("gh_repo", repo);
+  localStorage.setItem("gh_branch", branch);
 }
 
-async function fetchFile(path) {
-  const { token, repo, branch } = getConfig();
-  const url = `${GITHUB_API}/repos/${repo}/contents/${path}?ref=${branch}`;
-  const headers = token ? { Authorization: `token ${token}` } : {};
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status}`);
-  const data = await res.json();
+/* ===== GitHub API ===== */
+
+async function gitApi(path, opts) {
+  const { token } = getConfig();
+  const headers = { Accept: "application/vnd.github+json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (opts && opts.body) headers["Content-Type"] = "application/json";
+  const res = await fetch(`${GITHUB_API}/${path}`, Object.assign({}, opts, { headers }));
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error((data && (data.message || data.error)) || `HTTP ${res.status}`);
+  return data;
+}
+
+async function getFile(path) {
+  const { repo, branch } = getConfig();
+  const data = await gitApi(`repos/${repo}/contents/${path}?ref=${branch}`);
   return { sha: data.sha, content: decodeURIComponent(escape(atob(data.content))) };
 }
 
-async function pushFile(path, content, sha, message) {
-  const { token, repo, branch } = getConfig();
-  if (!token) throw new Error("GitHub token required");
-  const url = `${GITHUB_API}/repos/${repo}/contents/${path}`;
-  const body = { message, content: btoa(unescape(encodeURIComponent(content))), branch };
-  if (sha) body.sha = sha;
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || `Failed to push ${path}`);
+/* Публикация всех изменений одним коммитом (без поштучных сохранений). */
+async function commitBatch(files, message) {
+  const { repo, branch } = getConfig();
+  const head = await gitApi(`repos/${repo}/git/ref/heads/${branch}`);
+  const base = await gitApi(`repos/${repo}/git/commits/${head.object.sha}`);
+
+  const blobs = {};
+  for (const path of Object.keys(files)) {
+    const blob = await gitApi(`repos/${repo}/git/blobs`, {
+      method: "POST",
+      body: JSON.stringify({ content: files[path], encoding: "base64" }),
+    });
+    blobs[path] = blob.sha;
   }
-  return res.json();
+
+  const tree = await gitApi(`repos/${repo}/git/trees`, {
+    method: "POST",
+    body: JSON.stringify({
+      base_tree: base.tree.sha,
+      tree: Object.keys(files).map((path) => ({ path, mode: "100644", type: "blob", sha: blobs[path] })),
+    }),
+  });
+
+  const commit = await gitApi(`repos/${repo}/git/commits`, {
+    method: "POST",
+    body: JSON.stringify({ message, tree: tree.sha, parents: [head.object.sha] }),
+  });
+
+  await gitApi(`repos/${repo}/git/refs/heads/${branch}`, {
+    method: "PATCH",
+    body: JSON.stringify({ sha: commit.sha, force: false }),
+  });
+  return commit.sha;
 }
 
-function escapeHtml(str) {
-  return String(str ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+/* ===== Сборка полей форм ===== */
 
 function fieldInput(field, value) {
   value = value ?? "";
   switch (field.type) {
-    case "textarea": return `<textarea name="${field.key}" spellcheck="false">${escapeHtml(value)}</textarea>`;
-    case "checkbox": return `<input type="checkbox" name="${field.key}" ${value ? "checked" : ""}>`;
-    case "date": return `<input type="date" name="${field.key}" value="${value}">`;
-    case "number": return `<input type="number" name="${field.key}" value="${value}" ${field.min ? `min="${field.min}"` : ""} ${field.max ? `max="${field.max}"` : ""}>`;
-    case "select": return `<select name="${field.key}">${(field.options || []).map((o) => `<option value="${o}" ${String(value) === o ? "selected" : ""}>${o}</option>`).join("")}</select>`;
-    default: return `<input type="text" name="${field.key}" value="${escapeHtml(value)}">`;
+    case "textarea":
+      return `<textarea name="${field.key}" spellcheck="false" placeholder="${field.placeholder || ""}">${esc(value)}</textarea>`;
+    case "checkbox":
+      return `<input type="checkbox" name="${field.key}" ${value ? "checked" : ""}>`;
+    case "date":
+      return `<input type="date" name="${field.key}" value="${esc(value)}">`;
+    case "number":
+      return `<input type="number" name="${field.key}" value="${value}" step="any" ${field.min != null ? `min="${field.min}"` : ""} ${field.max != null ? `max="${field.max}"` : ""}>`;
+    case "select":
+      return `<select name="${field.key}">${(field.options || []).map((o) =>
+        `<option value="${esc(o)}" ${String(value) === o ? "selected" : ""}>${field.optionLabels && field.optionLabels[o] ? esc(field.optionLabels[o]) : esc(o)}</option>`).join("")}</select>`;
+    case "image":
+    case "model":
+      return `
+        <input type="text" name="${field.key}" value="${esc(value)}" data-upload-target>
+        <div class="upload-slot" data-is="${field.type}" data-upload-key="${field.key}">
+          <input type="file" class="upload-input" hidden ${field.type === "image" ? 'accept="image/*"' : 'accept=".glb,.gltf,.stl"'} data-ref="">
+          <div class="upload-preview"></div>
+          <div class="upload-actions">
+            <button type="button" class="btn-upload" data-upload-pick>Загрузить файл</button>
+            <button type="button" class="btn-clear" data-upload-clear>Убрать</button>
+          </div>
+          <div class="upload-state" data-upload-state></div>
+        </div>`;
+    default:
+      return `<input type="text" name="${field.key}" value="${esc(value)}" placeholder="${field.placeholder || ""}" spellcheck="false">`;
   }
 }
 
-function renderItemCard(index, fields, item, schema) {
-  return `
-    <div class="item-card" data-index="${index}">
-      <div class="item-header">
-        <h3>${escapeHtml(schema.label)} #${index + 1}</h3>
-        <button class="btn-remove" data-remove="${index}">Remove</button>
-      </div>
-      <div class="item-fields">
-        ${fields.map((f) => `<div class="form-field"><label>${f.label}</label>${fieldInput(f, item[f.key])}</div>`).join("")}
-      </div>
-    </div>
-  `;
+function renderSlotPreview(slot) {
+  const text = slot.parentElement.querySelector("[data-upload-target]");
+  const kind = slot.dataset.is;
+  const value = text ? text.value : "";
+  const box = slot.querySelector(".upload-preview");
+  const fileInput = slot.querySelector(".upload-input");
+  if (value) {
+    if (kind === "image") {
+      box.innerHTML = `<img src="${esc(value.indexOf("http") === 0 ? value : siteBase() + value)}" alt="">`;
+    } else {
+      box.innerHTML = `<span class="ph">📄 ${esc(value)}</span>`;
+    }
+  } else {
+    box.innerHTML = `<span class="ph">Файл не загружен</span>`;
+  }
+  const state = slot.querySelector("[data-upload-state]");
+  if (fileInput && fileInput.dataset.ref && pendingUploads.has(fileInput.dataset.ref)) {
+    state.textContent = "Будет загружен: " + (fileInput.dataset.path || "");
+    state.className = "upload-state ok";
+  } else {
+    state.textContent = "";
+    state.className = "upload-state";
+  }
 }
 
-function buildSimpleObjectForm(schema, data) {
+/* ===== Рендер разделов ===== */
+
+function renderSidebar() {
+  const bar = document.getElementById("sidebar");
+  bar.innerHTML = NAV.map((group) => `
+    <div class="nav-group">
+      <div class="nav-group-title">${group.section}</div>
+      ${group.items.map((it) => {
+        const s = SCHEMAS[it.type];
+        let count = "";
+        if (s && Array.isArray(loadedData[it.type])) {
+          count = `<span class="nav-count">${loadedData[it.type].length}</span>`;
+        }
+        const badge = dirty.has(it.type) ? `<span class="dirty-dot" title="Есть несохранённые изменения"></span>` : "";
+        return `<button class="nav-item ${currentType === it.type ? "active" : ""}" data-type="${it.type}"><span class="nav-label">${it.label}</span>${badge}${count}</button>`;
+      }).join("")}
+    </div>`).join("");
+}
+
+function pageHead(title, sub) {
+  document.getElementById("pageTitle").textContent = title;
+  document.getElementById("pageSub").textContent = sub || "";
+}
+
+function renderForm() {
+  const panel = document.getElementById("formPanel");
+  if (currentType === "connection") { renderConnection(); return; }
+  if (currentType === "i18n") { renderI18n(); return; }
+
+  const schema = SCHEMAS[currentType];
+  if (!schema) return;
+  const data = loadedData[currentType];
+  panel.innerHTML = schema.array ? buildArray(schema, data) : buildObject(schema, data);
+  panel.querySelectorAll(".upload-slot").forEach((slot) => renderSlotPreview(slot));
+  pageHead(schema.label, publishHint(schema));
+}
+
+function publishHint(schema) {
+  if (schema.array) return `Элементов: ${(loadedData[currentType] || []).length}. Нажмите «Опубликовать всё», чтобы сохранить изменения на сайте.`;
+  return "Заполните поля и нажмите «Опубликовать всё».";
+}
+
+function cardTools(schema, i, data) {
+  const count = data.length;
   return `
-    <div class="form-section-title">${schema.label}</div>
-    <div class="simple-object-form">
-      ${schema.fields.map((f) => `<div class="form-field"><label>${f.label}</label>${fieldInput(f, data[f.key])}</div>`).join("")}
-      ${(schema.nested || []).map((n) => `
+    <div class="item-tools">
+      <button type="button" class="icon-btn" data-dup="${i}" title="Скопировать элемент">⧉</button>
+      <button type="button" class="icon-btn" data-move="up" data-index="${i}" title="Выше в списке" ${i === 0 ? "disabled" : ""}>▲</button>
+      <button type="button" class="icon-btn" data-move="down" data-index="${i}" title="Ниже в списке" ${i === count - 1 ? "disabled" : ""}>▼</button>
+      <button type="button" class="btn-remove" data-remove="${i}">Удалить</button>
+    </div>`;
+}
+
+function itemFields(schema, item) {
+  return schema.fields.map((f) => `
+    <div class="form-field" data-kind="${f.type}">
+      <label>${f.label}${f.required ? ' <i class="req">*</i>' : ""}</label>
+      ${fieldInput(f, item[f.key])}
+      ${f.hint ? `<div class="field-hint">${f.hint}</div>` : ""}
+    </div>`).join("");
+}
+
+function buildArray(schema, data) {
+  if (!Array.isArray(data)) data = [];
+  const body = data.map((item, i) => `
+    <div class="item-card" data-index="${i}">
+      <div class="item-header">
+        <h3>${esc(schema.label)} №${i + 1}</h3>
+        ${cardTools(schema, i, data)}
+      </div>
+      <div class="item-fields">${itemFields(schema, item)}</div>
+    </div>`).join("");
+  return `
+    <div class="array-list" data-array-list="1">
+      ${body || `<div class="empty-hint">Список пуст. Добавьте первый элемент.</div>`}
+    </div>
+    <button class="btn-add" data-add-item="1">+ Добавить ${schema.label.toLowerCase()}</button>`;
+}
+
+function buildObject(schema, data) {
+  const nested = (schema.nested || []).map((n) => {
+    if (n.simpleText) {
+      return `
         <div class="nested-section">
           <h3>${n.label}</h3>
-          ${n.simpleText ? `
-            <div data-ns-key="${n.key}">
-              ${(data[n.key] || []).map((v, i) => `
-                <div class="list-item-row">
-                  <input type="text" value="${escapeHtml(v)}">
-                  <button class="btn-remove" data-simple-remove>✕</button>
-                </div>
-              `).join("")}
-            </div>
-            <button class="btn-add" data-add-simple="${n.key}">+ Add</button>
-          ` : `
-            <div data-nn-key="${n.key}">
-              ${(data[n.key] || []).map((item, i) => `
-                <div class="item-row">
-                  ${n.fields.map((f) => `<div class="form-field"><label>${f.label}</label>${fieldInput(f, item[f.key])}</div>`).join("")}
-                  <button class="btn-remove" data-nested-remove>Remove</button>
-                </div>
-              `).join("")}
-            </div>
-            <button class="btn-add" data-add-nested="${n.key}">+ Add ${n.label} item</button>
-          `}
+          <div data-ns-key="${n.key}">
+            ${(data[n.key] || []).map((v, i) => `<div class="list-item-row"><input type="text" value="${esc(v)}" data-ns-value><button type="button" class="btn-remove btn-sm" data-simple-remove>✕</button></div>`).join("")}
+          </div>
+          <button class="btn-add btn-sm" data-add-simple="${n.key}">+ Добавить пункт</button>
+        </div>`;
+    }
+    return `
+      <div class="nested-section">
+        <h3>${n.label}</h3>
+        <div data-nn-key="${n.key}">
+          ${(data[n.key] || []).map((item, i) => `
+            <div class="nested-row">
+              ${n.fields.map((f) => `<div class="form-field"><label>${f.label}</label>${fieldInput(f, item[f.key])}</div>`).join("")}
+              <button type="button" class="btn-remove btn-sm" data-nested-remove>Удалить</button>
+            </div>`).join("")}
         </div>
-      `).join("")}
-    </div>
-  `;
-}
+        <button class="btn-add btn-sm" data-add-nested="${n.key}">+ Добавить ${n.label.toLowerCase()} · элемент</button>
+      </div>`;
+  }).join("");
 
-function buildArrayListForm(schema, data) {
   return `
-    <div class="form-section-title">${schema.label} (${data.length})</div>
-    <div data-array-list="1">
-      ${data.map((item, i) => renderItemCard(i, schema.fields, item, schema)).join("")}
-    </div>
-    <button class="btn-add" data-add-item="1">+ Add ${schema.label} item</button>
-  `;
+    <div class="simple-object-form">
+      <div class="item-fields">${itemFields(schema, data)}</div>
+      ${nested}
+    </div>`;
 }
 
-function renderForm(type) {
-  const schema = SCHEMAS[type];
-  if (!schema) return;
+/* ===== Вкладка «Подключение к GitHub» ===== */
+
+function renderConnection() {
+  const c = getConfig();
   const panel = document.getElementById("formPanel");
-  const data = loadedData[type] || {};
-  currentType = type;
-  panel.innerHTML = schema.array
-    ? buildArrayListForm(schema, data)
-    : buildSimpleObjectForm(schema, data);
+  panel.innerHTML = `
+    <div class="connection-form">
+      <h3>Подключение к GitHub</h3>
+      <p class="conn-hint">Сайт публикуется через ваш аккаунт GitHub. Настройте один раз — дальше достаточно нажимать «Опубликовать всё».</p>
+
+      <div class="form-field">
+        <label>Личный токен GitHub <i class="req">*</i></label>
+        <input type="password" id="connToken" value="${esc(c.token)}" autocomplete="off" spellcheck="false" placeholder="ghp_... или github_pat_...">
+        <div class="field-hint">Создание: GitHub → Settings → Developer settings → Personal access tokens → Generate new token → отметить право <b>Contents: Read and write</b>. Токен хранится только в этом браузере.</div>
+      </div>
+
+      <div class="form-field">
+        <label>Репозиторий (владелец / название) <i class="req">*</i></label>
+        <input type="text" id="connRepo" value="${esc(c.repo)}" placeholder="Например: Draver93/3d-printing-website" spellcheck="false">
+      </div>
+
+      <div class="form-field">
+        <label>Ветка</label>
+        <input type="text" id="connBranch" value="${esc(c.branch || "main")}" placeholder="main" spellcheck="false">
+      </div>
+
+      <div class="conn-actions">
+        <button class="btn-secondary" id="connTest">Проверить подключение</button>
+        <button class="btn-primary" id="connLoad">Сохранить и загрузить данные</button>
+      </div>
+      ${c.repo ? `<p class="conn-site">Сайт: <a href="${siteBase()}" target="_blank" rel="noopener">${siteBase()}</a></p>` : ""}
+    </div>`;
+  pageHead("Подключение к GitHub", "Одноразовая настройка доступа к сайту.");
+
+  $("#connTest").addEventListener("click", async () => {
+    const { repo } = getConfig();
+    if (!repo) return setStatus("Введите репозиторий (владелец/название).", "error");
+    setStatus("Проверяем подключение...", "info");
+    try {
+      await gitApi(`repos/${repo}`);
+      saveConfig();
+      setStatus("Подключение работает — репозиторий найден. Нажмите «Сохранить и загрузить данные».", "success");
+    } catch (e) {
+      setStatus(ruError(e.message), "error");
+    }
+  });
+
+  $("#connLoad").addEventListener("click", () => {
+    saveConfig();
+    loadAll();
+  });
 }
 
-/* ===== COLLECTORS (read current DOM back into loadedData) ===== */
+/* ===== Вкладка «Тексты сайта» ===== */
+
+function i18nRow(key, value) {
+  const label = I18N_LABELS[key] || key;
+  const autoRows = Math.max(2, Math.min(7, Math.ceil(String(value || "").length / 80)));
+  return `
+    <div class="i18n-row" data-key="${key}">
+      <label title="${esc(key)}">${esc(label)}</label>
+      <span class="i18n-key">${esc(key)}</span>
+      <textarea data-i18n-value rows="${autoRows}" spellcheck="false">${esc(value || "")}</textarea>
+    </div>
+    ${String(value || "").includes("{") ? `<div class="i18n-note" data-key="${key}">⚠ Фигурные скобки {…} — это подстановки сайта. Не удаляйте и не меняйте их.</div>` : ""}`;
+}
+
+function renderI18n() {
+  const panel = document.getElementById("formPanel");
+  const base = i18nEdits.en || {};
+  const data = i18nEdits[i18nLang] || {};
+  const order = Object.keys(base);
+
+  const sections = {};
+  for (const key of order) {
+    if (!(key in data)) continue;
+    const sec = key.split(".")[0];
+    (sections[sec] = sections[sec] || []).push(key);
+  }
+
+  const query = ($("#i18nSearch") && $("#i18nSearch").value.trim().toLowerCase()) || "";
+  let groupsHtml = "";
+  for (const sec of Object.keys(sections)) {
+    const keys = sections[sec].filter((k) => {
+      if (!query) return true;
+      const label = (I18N_LABELS[k] || k).toLowerCase();
+      const val = String(data[k] || "").toLowerCase();
+      return label.includes(query) || val.includes(query) || k.includes(query);
+    });
+    if (!keys.length) continue;
+    groupsHtml += `
+      <section class="i18n-group">
+        <h3>${esc(I18N_GROUP_LABELS[sec] || sec)} <span class="i18n-group-n">${keys.length}</span></h3>
+        ${keys.map((k) => i18nRow(k, data[k], order)).join("")}
+      </section>`;
+  }
+
+  panel.innerHTML = `
+    <div class="i18n-toolbar">
+      <div class="lang-tabs">
+        ${LANGS.map((l) => `<button class="lang-tab ${l === i18nLang ? "active" : ""}" data-lang="${l}">${LANG_NAMES[l]}</button>`).join("")}
+      </div>
+      <input type="search" id="i18nSearch" class="i18n-search" placeholder="Поиск по тексту на сайте..." value="${esc(query)}" autocomplete="off">
+    </div>
+    <div class="i18n-list">${groupsHtml || `<div class="empty-hint">Ничего не найдено.</div>`}</div>`;
+  pageHead("Тексты и переводы", "Все надписи сайта на трёх языках. Измените и нажмите «Опубликовать всё».");
+}
+
+/* ===== Сбор данных из форм ===== */
 
 function collectCurrent() {
-  if (!currentType) return;
+  if (!currentType || currentType === "connection" || currentType === "i18n") return;
   const schema = SCHEMAS[currentType];
   const panel = document.getElementById("formPanel");
+  if (!schema || !panel) return;
   let data;
+
   if (schema.array) {
     data = Array.from(panel.querySelectorAll("[data-array-list] .item-card")).map((card) => {
       const item = {};
       schema.fields.forEach((f) => {
         const input = card.querySelector(`[name="${f.key}"]`);
         if (!input) return;
-        item[f.key] = f.type === "checkbox" ? input.checked : f.type === "number" ? parseFloat(input.value) || 0 : input.value;
+        item[f.key] = f.type === "checkbox" ? input.checked
+          : f.type === "number" ? (input.value === "" ? 0 : parseFloat(input.value) || 0)
+          : input.value;
       });
       return item;
     });
@@ -247,13 +721,15 @@ function collectCurrent() {
     schema.fields.forEach((f) => {
       const input = panel.querySelector(`[name="${f.key}"]`);
       if (!input) return;
-      data[f.key] = f.type === "checkbox" ? input.checked : f.type === "number" ? parseFloat(input.value) || 0 : input.value;
+      data[f.key] = f.type === "checkbox" ? input.checked
+        : f.type === "number" ? (parseFloat(input.value) || 0)
+        : input.value;
     });
     (schema.nested || []).forEach((n) => {
       if (n.simpleText) {
-        data[n.key] = Array.from(panel.querySelectorAll(`[data-ns-key="${n.key}"] .list-item-row input`)).map((i) => i.value);
+        data[n.key] = Array.from(panel.querySelectorAll(`[data-ns-key="${n.key}"] [data-ns-value]`)).map((i) => i.value);
       } else {
-        data[n.key] = Array.from(panel.querySelectorAll(`[data-nn-key="${n.key}"] .item-row`)).map((row) => {
+        data[n.key] = Array.from(panel.querySelectorAll(`[data-nn-key="${n.key}"] .nested-row`)).map((row) => {
           const item = {};
           n.fields.forEach((f) => {
             const input = row.querySelector(`[name="${f.key}"]`);
@@ -268,149 +744,356 @@ function collectCurrent() {
   loadedData[currentType] = data;
 }
 
-/* ===== TABS ===== */
-
-function buildTabs() {
-  const bar = document.getElementById("tabBar");
-  const types = Object.keys(SCHEMAS);
-  bar.innerHTML = types.map((t) => {
-    const s = SCHEMAS[t];
-    const count = Array.isArray(loadedData[t]) ? ` (${loadedData[t].length})` : "";
-    const label = s.label + count;
-    return `<button class="tab ${t === currentType ? "active" : ""}" data-type="${t}">${label}</button>`;
-  }).join("");
+function validateType(type) {
+  const schema = SCHEMAS[type];
+  const data = loadedData[type];
+  const errors = [];
+  if (!data) return errors;
+  const check = (item, index) => {
+    schema.fields.filter((f) => f.required && f.type !== "checkbox").forEach((f) => {
+      if (String(item[f.key] ?? "").trim() === "") {
+        errors.push(`${schema.label}${index != null ? ", элемент №" + (index + 1) : ""}: заполните «${f.label}»`);
+      }
+    });
+  };
+  if (schema.array) data.forEach(check);
+  else check(data);
+  return errors;
 }
 
-function bindTabs() {
-  document.getElementById("tabBar").addEventListener("click", (e) => {
-    const btn = e.target.closest(".tab");
-    if (!btn) return;
-    collectCurrent();
-    currentType = btn.dataset.type;
-    buildTabs();
-    renderForm(currentType);
-  });
+/* ===== Публикация ===== */
+
+function markDirty(type, silent) {
+  if (!type) return;
+  dirty.add(type);
+  updateDirtyUi(silent);
 }
 
-function bindFormEvents() {
-  const panel = document.getElementById("formPanel");
-  panel.addEventListener("click", (e) => {
-    const schema = SCHEMAS[currentType];
-    if (!schema) return;
-
-    if (e.target.matches("[data-add-item]")) {
-      const empty = {};
-      schema.fields.forEach((f) => { empty[f.key] = f.type === "checkbox" ? false : f.type === "number" ? 0 : ""; });
-      const list = panel.querySelector("[data-array-list]");
-      const index = list.children.length;
-      list.insertAdjacentHTML("beforeend", renderItemCard(index, schema.fields, empty, schema));
-      return;
-    }
-    if (e.target.matches("[data-remove]")) {
-      e.target.closest(".item-card").remove();
-      return;
-    }
-    if (e.target.matches("[data-simple-remove]")) {
-      e.target.closest(".list-item-row").remove();
-      return;
-    }
-    if (e.target.matches("[data-add-simple]")) {
-      const container = panel.querySelector(`[data-ns-key="${e.target.dataset.addSimple}"]`);
-      container.insertAdjacentHTML("beforeend", `<div class="list-item-row"><input type="text" value=""><button class="btn-remove" data-simple-remove>✕</button></div>`);
-      return;
-    }
-    if (e.target.matches("[data-nested-remove]")) {
-      e.target.closest(".item-row").remove();
-      return;
-    }
-    if (e.target.matches("[data-add-nested]")) {
-      const n = schema.nested.find((x) => x.key === e.target.dataset.addNested);
-      const container = panel.querySelector(`[data-nn-key="${e.target.dataset.addNested}"]`);
-      const empty = {};
-      n.fields.forEach((f) => { empty[f.key] = f.type === "checkbox" ? false : f.type === "number" ? 0 : ""; });
-      container.insertAdjacentHTML("beforeend", `
-        <div class="item-row">
-          ${n.fields.map((f) => `<div class="form-field"><label>${f.label}</label>${fieldInput(f, empty[f.key])}</div>`).join("")}
-          <button class="btn-remove" data-nested-remove>Remove</button>
-        </div>
-      `);
-    }
-  });
+function updateDirtyUi(silent) {
+  const pill = $("#dirtyPill");
+  const has = dirty.size > 0;
+  if (pill) {
+    pill.hidden = !has;
+    pill.textContent = has ? `Изменения: ${dirty.size}` : "";
+  }
+  if (!silent) renderSidebar();
 }
 
-/* ===== LOAD ALL / SAVE ALL ===== */
+function setStatus(msg, kind) {
+  const bar = $("#statusBar");
+  bar.textContent = msg;
+  bar.className = "status-bar show " + (kind || "info");
+}
 
 async function loadAll() {
   const { repo } = getConfig();
-  if (!repo) return setStatus("Enter your repo (owner/repo)", "error");
-  setStatus("Loading all files...", "info");
-  document.getElementById("loadBtn").disabled = true;
+  if (!repo) {
+    currentType = currentType || "connection";
+    renderSidebar();
+    renderForm();
+    return setStatus("Укажите репозиторий во вкладке «Подключение», затем нажмите «Сохранить и загрузить данные».", "error");
+  }
+  setStatus("Загрузка данных с GitHub...", "info");
+  $("#refreshBtn").disabled = true;
 
   loadedData = {};
-  let loaded = 0;
-  for (const [type, schema] of Object.entries(SCHEMAS)) {
+  let loadedOk = 0;
+  for (const type of Object.keys(SCHEMAS)) {
     try {
-      const { content } = await fetchFile(schema.path);
+      const { content } = await getFile(SCHEMAS[type].path);
       loadedData[type] = JSON.parse(content);
-      loaded++;
+      loadedOk++;
     } catch (e) {
-      console.warn(e);
+      console.warn(type, e.message);
       loadedData[type] = null;
     }
   }
-
-  document.getElementById("loadBtn").disabled = false;
-  currentType = Object.keys(SCHEMAS)[0];
-  buildTabs();
-  renderForm(currentType);
-  setStatus(`Loaded ${loaded}/${Object.keys(SCHEMAS).length} files`, loaded === Object.keys(SCHEMAS).length ? "success" : "info");
-}
-
-async function saveAll() {
-  const { token } = getConfig();
-  if (!token) return setStatus("GitHub token required to push", "error");
-  collectCurrent();
-
-  setStatus("Saving all files...", "info");
-  document.getElementById("saveBtn").disabled = true;
-  let pushed = 0;
-  let failed = 0;
-
-  for (const [type, schema] of Object.entries(SCHEMAS)) {
-    const data = loadedData[type];
-    if (data === null || data === undefined) continue;
-    const content = JSON.stringify(data, null, 2);
+  for (const l of LANGS) {
     try {
-      await pushFile(schema.path, content, null, `Update ${schema.label} via admin`);
-      pushed++;
+      const { content } = await getFile(`i18n/${l}.json`);
+      i18nEdits[l] = flatten(JSON.parse(content), "", {});
     } catch (e) {
-      console.error(e);
-      failed++;
+      console.warn("i18n", l, e.message);
+      i18nEdits[l] = null;
     }
   }
 
-  document.getElementById("saveBtn").disabled = false;
-  if (failed === 0) {
-    setStatus(`Saved ${pushed}/${Object.keys(SCHEMAS).length} files and pushed to GitHub`, "success");
-  } else {
-    setStatus(`Pushed ${pushed}, failed ${failed}`, failed > 0 ? "error" : "success");
+  $("#refreshBtn").disabled = false;
+  dirty.clear();
+  pendingUploads.clear();
+  i18nLang = "ru";
+  currentType = loadedOk > 0 ? "catalog" : "connection";
+  updateDirtyUi(true);
+  renderSidebar();
+  renderForm();
+
+  if (loadedOk > 0) setStatus(`Данные загружены (${loadedOk}/${Object.keys(SCHEMAS).length}).`, "success");
+  else setStatus("Не удалось загрузить данные. Проверьте токен и имя репозитория во вкладке «Подключение».", "error");
+}
+
+async function publish() {
+  const { token, repo } = getConfig();
+  if (!token || !repo) return setStatus("Сначала настройте подключение (токен и репозиторий).", "error");
+
+  collectCurrent();
+
+  const dataTypes = [...dirty].filter((t) => SCHEMAS[t]);
+  const errors = [];
+  for (const t of dataTypes) errors.push(...validateType(t));
+  if (errors.length) {
+    return setStatus("Нельзя опубликовать:\n• " + errors.join("\n• "), "error");
+  }
+
+  const files = {};
+  let hasUploads = 0;
+  for (const [type, schema] of Object.entries(SCHEMAS)) {
+    if (!dirty.has(type) || loadedData[type] == null) continue;
+    files[schema.path] = toB64(JSON.stringify(loadedData[type], null, 2));
+  }
+  if (dirty.has("i18n")) {
+    for (const l of LANGS) {
+      if (i18nEdits[l]) files[`i18n/${l}.json`] = toB64(JSON.stringify(hydrate(i18nEdits[l]), null, 2));
+    }
+  }
+  for (const up of pendingUploads.values()) {
+    files[up.path] = up.b64;
+    hasUploads++;
+  }
+
+  const total = Object.keys(files).length;
+  if (!total) return setStatus("Нет изменений для публикации.", "info");
+  if (!confirm(`Опубликовать изменения?\nФайлов к сохранению: ${total}${hasUploads ? ` (включая ${hasUploads} загруженных файлов)` : ""}`)) return;
+
+  setStatus("Публикуем на GitHub...", "info");
+  $("#publishBtn").disabled = true;
+  try {
+    await commitBatch(files, "Обновление сайта через админ-панель");
+    dirty.clear();
+    pendingUploads.clear();
+    updateDirtyUi(true);
+    renderSidebar();
+    setStatus("Готово! Изменения опубликованы. Сайт обновится в течение пары минут.", "success");
+  } catch (e) {
+    console.error(e);
+    setStatus("Ошибка публикации: " + ruError(e.message), "error");
+  } finally {
+    $("#publishBtn").disabled = false;
   }
 }
 
-/* ===== INIT ===== */
-document.getElementById("loadBtn").addEventListener("click", loadAll);
-document.getElementById("saveBtn").addEventListener("click", saveAll);
-bindTabs();
-bindFormEvents();
+/* ===== События ===== */
 
-const savedToken = localStorage.getItem("gh_token");
-const savedRepo = localStorage.getItem("gh_repo");
-if (savedToken) document.getElementById("tokenInput").value = savedToken;
-if (savedRepo) document.getElementById("repoInput").value = savedRepo;
-
-["tokenInput", "repoInput"].forEach((id) => {
-  document.getElementById(id).addEventListener("change", (e) => {
-    if (id === "tokenInput") localStorage.setItem("gh_token", e.target.value);
-    if (id === "repoInput") localStorage.setItem("gh_repo", e.target.value);
+function bindEvents() {
+  /* Навигация по разделам */
+  $("#sidebar").addEventListener("click", (e) => {
+    const btn = e.target.closest(".nav-item");
+    if (!btn) return;
+    collectCurrent();
+    currentType = btn.dataset.type;
+    renderSidebar();
+    renderForm();
   });
-});
+
+  /* Клики внутри формы */
+  const panel = $("#formPanel");
+  panel.addEventListener("click", (e) => {
+    const t = e.target;
+
+    if (t.closest("[data-upload-clear]")) {
+      collectCurrent();
+      const slot = t.closest(".upload-slot");
+      const fi = slot.querySelector(".upload-input");
+      if (fi && fi.dataset.ref) pendingUploads.delete(fi.dataset.ref);
+      const text = slot.parentElement.querySelector("[data-upload-target]");
+      const oldValue = text ? text.value : "";
+      if (oldValue) {
+        for (const [ref, up] of pendingUploads) {
+          if (up.path === oldValue) pendingUploads.delete(ref);
+        }
+      }
+      if (text) text.value = "";
+      renderSlotPreview(slot);
+      markDirty(currentType);
+      return;
+    }
+
+    if (t.closest("[data-upload-pick]")) {
+      const slot = t.closest(".upload-slot");
+      const fi = slot.querySelector(".upload-input");
+      if (fi) fi.click();
+      return;
+    }
+
+    if (t.matches("[data-lang]")) {
+      i18nLang = t.dataset.lang;
+      renderI18n();
+      return;
+    }
+
+    /* структурные операции — сначала собираем, потом правим данные и перерисовываем */
+    if (currentType === "connection" || currentType === "i18n") return;
+
+    collectCurrent();
+    const schema = SCHEMAS[currentType];
+    if (!schema) return;
+    let data = loadedData[currentType];
+
+    if (t.matches("[data-add-item]")) {
+      if (!Array.isArray(data)) data = [];
+      const empty = {};
+      schema.fields.forEach((f) => { empty[f.key] = f.type === "checkbox" ? false : f.type === "number" ? 0 : ""; });
+      data.push(empty);
+      loadedData[currentType] = data;
+      markDirty(currentType);
+      renderForm();
+      return;
+    }
+
+    if (t.matches("[data-remove]")) {
+      data.splice(Number(t.dataset.remove), 1);
+      loadedData[currentType] = data;
+      markDirty(currentType);
+      renderForm();
+      return;
+    }
+
+    if (t.matches("[data-dup]")) {
+      const src = JSON.parse(JSON.stringify(data[Number(t.dataset.dup)]));
+      data.splice(Number(t.dataset.dup) + 1, 0, src);
+      loadedData[currentType] = data;
+      markDirty(currentType);
+      renderForm();
+      return;
+    }
+
+    if (t.matches("[data-move]")) {
+      const i = Number(t.dataset.index);
+      const j = t.dataset.move === "up" ? i - 1 : i + 1;
+      if (j < 0 || j >= data.length) return;
+      [data[i], data[j]] = [data[j], data[i]];
+      loadedData[currentType] = data;
+      markDirty(currentType);
+      renderForm();
+      return;
+    }
+
+    if (t.matches("[data-simple-remove]")) {
+      t.closest(".list-item-row").remove();
+      markDirty(currentType);
+      return;
+    }
+    if (t.matches("[data-add-simple]")) {
+      const c = panel.querySelector(`[data-ns-key="${t.dataset.addSimple}"]`);
+      c.insertAdjacentHTML("beforeend", '<div class="list-item-row"><input type="text" value="" data-ns-value><button type="button" class="btn-remove btn-sm" data-simple-remove>✕</button></div>');
+      markDirty(currentType);
+      return;
+    }
+    if (t.matches("[data-nested-remove]")) {
+      t.closest(".nested-row").remove();
+      markDirty(currentType);
+      return;
+    }
+    if (t.matches("[data-add-nested]")) {
+      const n = (schema.nested || []).find((x) => x.key === t.dataset.addNested);
+      if (!n) return;
+      const c = panel.querySelector(`[data-nn-key="${t.dataset.addNested}"]`);
+      const empty = {};
+      n.fields.forEach((f) => { empty[f.key] = f.type === "checkbox" ? false : f.type === "number" ? 0 : ""; });
+      c.insertAdjacentHTML("beforeend", `
+        <div class="nested-row">
+          ${n.fields.map((f) => `<div class="form-field"><label>${f.label}</label>${fieldInput(f, empty[f.key])}</div>`).join("")}
+          <button type="button" class="btn-remove btn-sm" data-nested-remove>Удалить</button>
+        </div>`);
+      markDirty(currentType);
+      return;
+    }
+  });
+
+  /* Изменение полей */
+  panel.addEventListener("input", (e) => {
+    if (currentType === "i18n") {
+      const ta = e.target.closest("[data-i18n-value]");
+      if (ta) {
+        const key = ta.closest(".i18n-row").dataset.key;
+        if (i18nEdits[i18nLang]) i18nEdits[i18nLang][key] = ta.value;
+        markDirty("i18n", true);
+      }
+      return;
+    }
+    if (currentType && currentType !== "connection") markDirty(currentType, true);
+  });
+  panel.addEventListener("change", (e) => {
+    if (currentType === "i18n" || currentType === "connection") return;
+    if (currentType) markDirty(currentType, true);
+  });
+
+  /* Загрузка файлов (изображения и 3D-модели) */
+  panel.addEventListener("change", (e) => {
+    const input = e.target.closest(".upload-input");
+    if (!input) return;
+    const slot = input.closest(".upload-slot");
+    const kind = slot.dataset.is;
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    const ext = extFrom(file.name);
+    const ref = "u_" + Math.random().toString(36).slice(2, 10);
+    const path = (kind === "image" ? "images/" : "models/") + (kind === "image" ? "img_" : "model_") + Date.now() + "." + ext;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const b64 = String(reader.result).split(",")[1];
+      pendingUploads.set(ref, { path, b64 });
+      input.dataset.ref = ref;
+      input.dataset.path = path;
+      input.value = "";
+      const text = slot.parentElement.querySelector("[data-upload-target]");
+      if (text) text.value = path;
+      renderSlotPreview(slot);
+      if (currentType) markDirty(currentType);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  /* Поиск по текстам (фильтр строк без перерисовки) */
+  panel.addEventListener("input", (e) => {
+    if (!e.target.matches(".i18n-search")) return;
+    const q = e.target.value.trim().toLowerCase();
+    const langData = i18nEdits[i18nLang] || {};
+    panel.querySelectorAll(".i18n-row").forEach((row) => {
+      const key = row.dataset.key;
+      const hay = ((I18N_LABELS[key] || key) + " " + String(langData[key] || "")).toLowerCase();
+      row.style.display = hay.includes(q) ? "" : "none";
+    });
+    panel.querySelectorAll(".i18n-group").forEach((group) => {
+      const vis = Array.from(group.querySelectorAll(".i18n-row")).some((r) => r.style.display !== "none");
+      group.style.display = vis ? "" : "none";
+    });
+  });
+
+  /* Кнопки в шапке */
+  $("#refreshBtn").addEventListener("click", () => {
+    if (dirty.size) {
+      if (!confirm("Есть несохранённые изменения. Загрузить данные заново и отменить их?")) return;
+    }
+    loadAll();
+  });
+  $("#publishBtn").addEventListener("click", publish);
+}
+
+/* ===== Запуск ===== */
+
+bindEvents();
+
+(function init() {
+  const hasRepo = !!localStorage.getItem("gh_repo");
+  currentType = hasRepo ? "catalog" : "connection";
+  renderSidebar();
+  renderForm();
+  if (hasRepo) loadAll();
+  const link = $("#siteLink");
+  if (siteBase()) {
+    link.href = siteBase();
+    link.hidden = false;
+  }
+})();
