@@ -742,6 +742,7 @@ window.openOrderModal = function (context) {
   const fileInput = body.querySelector("#orderFiles");
   const fileListEl = body.querySelector("#orderFileList");
   let files = [];
+  let busy = false;
 
   function renderFiles() {
     if (!fileListEl) return;
@@ -765,6 +766,12 @@ window.openOrderModal = function (context) {
       renderFiles();
     });
   }
+
+  form.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target && e.target.tagName === "INPUT") {
+      e.preventDefault();
+    }
+  });
 
   function lockForm() {
     form.querySelectorAll("input, textarea, .file-list button").forEach((el) => { el.disabled = true; });
@@ -817,6 +824,7 @@ window.openOrderModal = function (context) {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (busy) return;
     const name = form.name.value.trim();
     const contact = form.contact.value.trim();
     const message = form.message.value.trim();
@@ -827,6 +835,8 @@ window.openOrderModal = function (context) {
       statusEl.textContent = t("request.required");
       return;
     }
+
+    busy = true;
 
     const purposeLabel = context.type === "print" ? "Order print" : context.type === "buy" ? "Buy model" : "Custom request";
 
