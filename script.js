@@ -774,32 +774,46 @@ window.openOrderModal = function (context) {
     }
   });
 
+  const HOLD_MS = 2000;
+  let holdStart = 0;
   let holdTimer = null;
+  let resetTimer = null;
 
-  function setHoldMsg(text) {
-    statusEl.hidden = false;
-    statusEl.className = "request-status info";
-    statusEl.textContent = text;
+  function clearTimers() {
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
   }
 
-  function cancelHold(early) {
-    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+  function resetButton() {
+    clearTimers();
     submitBtn.classList.remove("holding");
     if (!busy) submitBtn.textContent = t("catalog.reqSend");
-    if (early && !busy) setHoldMsg(t("catalog.reqHoldEarly"));
+  }
+
+  function fireHold() {
+    holdTimer = null;
+    submitBtn.classList.remove("holding");
+    submitBtn.textContent = t("catalog.reqSend");
+    form.requestSubmit();
   }
 
   function startHold() {
-    if (busy || submitBtn.disabled || holdTimer) return;
+    if (busy || submitBtn.disabled) return;
+    clearTimers();
+    submitBtn.classList.remove("holding");
+    void submitBtn.offsetWidth;
     submitBtn.classList.add("holding");
     submitBtn.textContent = t("catalog.reqHold");
-    setHoldMsg(t("catalog.reqHoldHint"));
-    holdTimer = setTimeout(() => {
-      holdTimer = null;
-      submitBtn.classList.remove("holding");
-      submitBtn.textContent = t("catalog.reqSend");
-      form.requestSubmit();
-    }, 1200);
+    holdStart = Date.now();
+    holdTimer = setTimeout(fireHold, HOLD_MS);
+  }
+
+  function releaseHold() {
+    if (!holdTimer) return;
+    const remain = Math.max(100, HOLD_MS - (Date.now() - holdStart));
+    clearTimeout(holdTimer);
+    holdTimer = null;
+    resetTimer = setTimeout(resetButton, remain);
   }
 
   submitBtn.addEventListener("pointerdown", (e) => {
@@ -807,19 +821,19 @@ window.openOrderModal = function (context) {
     e.preventDefault();
     startHold();
   });
-  submitBtn.addEventListener("pointerup", () => cancelHold(true));
-  submitBtn.addEventListener("pointerleave", cancelHold);
-  submitBtn.addEventListener("pointercancel", cancelHold);
+  submitBtn.addEventListener("pointerup", releaseHold);
+  submitBtn.addEventListener("pointerleave", releaseHold);
+  submitBtn.addEventListener("pointercancel", releaseHold);
   submitBtn.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
     e.preventDefault();
     startHold();
   });
   submitBtn.addEventListener("keyup", (e) => {
-    if (e.key === "Enter" || e.key === " ") cancelHold(true);
+    if (e.key === "Enter" || e.key === " ") releaseHold();
   });
-  submitBtn.addEventListener("blur", cancelHold);
-  window._orderModalCancelHold = cancelHold;
+  submitBtn.addEventListener("blur", resetButton);
+  window._orderModalCancelHold = resetButton;
 
   function lockForm() {
     form.querySelectorAll("input, textarea, .file-list button").forEach((el) => { el.disabled = true; });

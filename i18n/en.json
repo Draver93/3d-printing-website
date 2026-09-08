@@ -90,8 +90,6 @@
     "reqRemove": "Remove file",
     "reqSend": "Send request",
     "reqHold": "Hold to send",
-    "reqHoldHint": "Keep holding for 1 second…",
-    "reqHoldEarly": "Released too early. Keep holding the button to send your request.",
     "reqSent": "Request sent",
     "reqSending": "Sending...",
     "reqApiError": "Couldn't send automatically \u2014 your request is saved with the ID above.",
