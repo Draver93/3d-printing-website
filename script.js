@@ -709,10 +709,6 @@ window.openOrderModal = function (context) {
         <input id="orderContact" name="contact" type="text" placeholder="${t("catalog.reqContactPlaceholder")}" required>
       </div>
       <div class="order-field">
-        <label for="orderEmail">${t("catalog.reqEmail")}</label>
-        <input id="orderEmail" name="email" type="email" placeholder="name@example.com">
-      </div>
-      <div class="order-field">
         <label for="orderMessage">${t("catalog.orderMessage")}</label>
         <textarea id="orderMessage" name="message" rows="2" placeholder="${t("catalog.orderMessagePlaceholder")}"></textarea>
       </div>
@@ -763,17 +759,6 @@ window.openOrderModal = function (context) {
     submitBtn.textContent = t("catalog.reqSent");
   }
 
-  const waLinkFor = (id) => `${social.whatsapp}?text=${encodeURIComponent([
-      purposeLabel + (context.name ? ": " + context.name : ""),
-      context.price ? "Price: " + fmt(context.price) + " ₽" : "",
-      "Request ID: " + id,
-      "Name: " + name,
-      "Contact: " + contact,
-      visitorEmail ? "Email: " + visitorEmail : "",
-      message ? "Message: " + message : "",
-      files.length ? "Attachments: " + attachments : "",
-    ].filter(Boolean).join("\n"))}`;
-
   async function submitRequest(apiFormData) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 25000);
@@ -800,9 +785,6 @@ window.openOrderModal = function (context) {
           <button type="button" class="request-id-copy" data-copy-id="${requestId}">${t("catalog.reqIdCopy")}</button>
         </div>
         <div class="request-id-hint">${t("catalog.reqIdHint").replace("{track}", '<a href="#track">').replace("{/track}", "</a>")}</div>
-      </div>
-      <div class="request-handoff">
-        <a class="handoff" href="${waLinkFor(requestId)}" target="_blank">📲 ${t("catalog.reqWhatsapp")}</a>
       </div>`;
     const idCopy = statusEl.querySelector("[data-copy-id]");
     if (idCopy) idCopy.addEventListener("click", async () => {
@@ -824,7 +806,6 @@ window.openOrderModal = function (context) {
     e.preventDefault();
     const name = form.name.value.trim();
     const contact = form.contact.value.trim();
-    const visitorEmail = form.email.value.trim();
     const message = form.message.value.trim();
 
     if (!name || !contact) {
@@ -833,15 +814,8 @@ window.openOrderModal = function (context) {
       statusEl.textContent = t("request.required");
       return;
     }
-    if (visitorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(visitorEmail)) {
-      statusEl.hidden = false;
-      statusEl.className = "request-status error";
-      statusEl.textContent = t("catalog.reqEmailError");
-      return;
-    }
 
     const purposeLabel = context.type === "print" ? "Order print" : context.type === "buy" ? "Buy model" : "Custom request";
-    const attachments = files.map((f) => f.name).join(", ");
 
     const localId = generateRequestId();
     try { localStorage.setItem("lastRequestId", localId); } catch (err) {}
@@ -859,7 +833,6 @@ window.openOrderModal = function (context) {
     if (context.price) fd.set("price", String(context.price));
     fd.set("name", name);
     fd.set("contact", contact);
-    if (visitorEmail) fd.set("email", visitorEmail);
     if (message) fd.set("message", message);
     for (const f of files) fd.append("file", f, f.name);
 
