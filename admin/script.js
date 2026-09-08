@@ -21,6 +21,7 @@ const NAV = [
   ] },
   { section: "Работа с заявками", items: [
     { type: "requests", label: "Заявки клиентов" },
+    { type: "cloudRequests", label: "Новые заявки (Cloudflare)" },
   ] },
   { section: "Контакты", items: [
     { type: "social", label: "Соцсети и email" },
@@ -134,6 +135,7 @@ const I18N_LABELS = {
   "track.subtitle": "Подзаголовок блока",
   "track.inputPlaceholder": "Поле ввода ID (пример)",
   "track.button": "Кнопка «Проверить»",
+  "track.searching": "Сообщение «ищем заявку»",
   "track.updated": "Подпись «Обновлено»",
   "track.notFound": "Сообщение «не найдено»",
   "track.status.received": "Статус: получена",
@@ -167,6 +169,7 @@ const I18N_LABELS = {
   "catalog.reqName": "Поле «Ваше имя»",
   "catalog.reqContact": "Поле «Контакт»",
   "catalog.reqContactPlaceholder": "Поле «Контакт» (пример)",
+  "catalog.reqEmail": "Поле «Ваш email»",
   "catalog.reqPurpose": "Поле «Для чего нужна деталь»",
   "catalog.reqPurposePlaceholder": "Поле «Для чего» (пример)",
   "catalog.reqMaterial": "Поле «Материал»",
@@ -178,10 +181,10 @@ const I18N_LABELS = {
   "catalog.reqAttachmentsHint": "Подсказка про файлы",
   "catalog.reqRemove": "Кнопка «Убрать файл»",
   "catalog.reqSend": "Кнопка «Отправить»",
-  "catalog.reqSending": "Кнопка «Отправка...»",
   "catalog.reqSent": "Кнопка «Отправлено»",
-  "catalog.reqEmailNote": "Примечание «отправлено на почту»",
-  "catalog.reqError": "Сообщение об ошибке отправки",
+  "catalog.reqSending": "Кнопка «Отправляем...»",
+  "catalog.reqApiError": "Предупреждение при сбое отправки",
+  "catalog.reqEmailError": "Ошибка неверного email",
   "catalog.reqWhatsapp": "Кнопка «Отправить через WhatsApp»",
   "catalog.reqIdLabel": "Подпись «ID заявки»",
   "catalog.reqIdCopy": "Кнопка «Копировать»",
@@ -441,6 +444,7 @@ function renderForm() {
   const panel = document.getElementById("formPanel");
   if (currentType === "connection") { renderConnection(); return; }
   if (currentType === "i18n") { renderI18n(); return; }
+  if (currentType === "cloudRequests") { renderCloudRequests(); return; }
 
   const schema = SCHEMAS[currentType];
   if (!schema) return;
@@ -631,6 +635,99 @@ function renderI18n() {
     </div>
     <div class="i18n-list">${groupsHtml || `<div class="empty-hint">Ничего не найдено.</div>`}</div>`;
   pageHead("Тексты и переводы", "Все надписи сайта на трёх языках. Измените и нажмите «Опубликовать всё».");
+}
+
+/* ===== Вкладка «Новые заявки (Cloudflare)» ===== */
+
+const CLOUD_STATUS_LABELS = { received: "Получена", printing: "Печатается", ready: "Готова к выдаче", done: "Выполнена", cancelled: "Отменена", declined: "Отклонена" };
+
+function cloudListHtml(rows, token) {
+  return rows.map((r) => {
+    let files = [];
+    try { files = JSON.parse(r.files || "[]"); } catch (e) {}
+    return `
+      <div class="cloud-card" data-id="${esc(r.id)}">
+        <div class="cloud-head">
+          <strong>${esc(r.id)}</strong>
+          <span class="cloud-date">${r.created_at ? new Date(r.created_at).toLocaleString("ru-RU") : ""}</span>
+        </div>
+        <div class="cloud-line">${esc(r.purpose || "")}${r.item ? " · " + esc(r.item) : ""}${r.price ? " · " + r.price + " ₽" : ""}</div>
+        <div class="cloud-line">${esc(r.name || "")} · ${esc(r.contact || "")}${r.email ? " · " + esc(r.email) : ""}</div>
+        ${r.message ? `<div class="cloud-line cloud-message">${esc(r.message)}</div>` : ""}
+        ${files.length ? `<div class="cloud-line cloud-files">📎 ${files.map((f) => `<a href="/api/file?req=${encodeURIComponent(r.id)}&dl=${encodeURIComponent(r.dl_token || "")}&f=${encodeURIComponent(f)}" target="_blank" rel="noopener">${esc(f)}</a>`).join(" · ")}</div>` : ""}
+        <div class="cloud-edit">
+          <select data-status>${Object.keys(CLOUD_STATUS_LABELS).map((s) => `<option value="${s}" ${s === r.status ? "selected" : ""}>${CLOUD_STATUS_LABELS[s]}</option>`).join("")}</select>
+          <input type="text" data-note value="${esc(r.note || "")}" placeholder="Примечание (видит клиент)">
+          <button class="btn-primary" data-save>Сохранить</button>
+        </div>
+      </div>`;
+  }).join("") || `<div class="empty-hint">Заявок пока нет.</div>`;
+}
+
+function bindCloudList(rows, token) {
+  document.querySelectorAll("[data-save]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const card = btn.closest(".cloud-card");
+      const id = card.dataset.id;
+      const status = card.querySelector("[data-status]").value;
+      const note = card.querySelector("[data-note]").value.trim();
+      btn.disabled = true;
+      try {
+        const res = await fetch("/api/requests", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({ id, status, note }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || res.status);
+        btn.textContent = "✓";
+        setStatus("Статус заявки " + id + " обновлён.", "success");
+      } catch (e) {
+        btn.disabled = false;
+        setStatus("Ошибка обновления: " + e.message, "error");
+      }
+    });
+  });
+}
+
+function renderCloudRequests() {
+  const panel = document.getElementById("formPanel");
+  const token = localStorage.getItem("api_token") || "";
+  panel.innerHTML = `
+    <div class="connection-form">
+      <h3>Заявки (Cloudflare)</h3>
+      <p class="conn-hint">Заявки с формы сайта хранятся в Cloudflare D1 и приходят вам в Telegram со ссылками на файлы. Здесь можно посмотреть все заявки и менять статус — его видит клиент на странице отслеживания.</p>
+      <div class="form-field">
+        <label>Ключ доступа (API_TOKEN)</label>
+        <input type="password" id="cloudToken" value="${esc(token)}" autocomplete="off" spellcheck="false" placeholder="тот же ключ, что задан секретом API_TOKEN на Cloudflare">
+        <div class="field-hint">Задайте его на Cloudflare: <b>wrangler pages secret put API_TOKEN</b> (или в настройках Pages → Settings → Variables).</div>
+      </div>
+      <div class="conn-actions">
+        <button class="btn-primary" id="cloudLoad">Загрузить заявки</button>
+      </div>
+    </div>
+    <div class="cloud-list" id="cloudList"></div>`;
+  pageHead("Новые заявки (Cloudflare)", "Форма сайта: файлы, статусы, трекинг.");
+
+  $("#cloudLoad").addEventListener("click", async () => {
+    const tk = $("#cloudToken").value.trim();
+    localStorage.setItem("api_token", tk);
+    if (!tk) return setStatus("Введите ключ доступа.", "error");
+    setStatus("Загружаем заявки...", "info");
+    try {
+      const res = await fetch("/api/requests", { headers: { Authorization: "Bearer " + tk } });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 401) return setStatus("Неверный ключ доступа (401). Проверьте API_TOKEN.", "error");
+        return setStatus("Ошибка: " + (data.error || res.status), "error");
+      }
+      $("#cloudList").innerHTML = cloudListHtml(data.requests || [], tk);
+      bindCloudList(data.requests || [], tk);
+      setStatus("Заявок: " + (data.requests || []).length + ".", "success");
+    } catch (e) {
+      setStatus("Не удалось связаться с сервером. Вкладка заработает после переезда сайта на Cloudflare Pages.", "error");
+    }
+  });
 }
 
 /* ===== Сбор данных из форм ===== */

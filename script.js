@@ -680,7 +680,6 @@ function initOrderModal(email, social) {
 }
 
 window.openOrderModal = function (context) {
-  const email = initOrderModal._email;
   const social = initOrderModal._social;
   const modal = document.getElementById("orderModal");
   const body = document.getElementById("orderModalBody");
@@ -708,6 +707,10 @@ window.openOrderModal = function (context) {
       <div class="order-field">
         <label for="orderContact">${t("catalog.reqContact")}</label>
         <input id="orderContact" name="contact" type="text" placeholder="${t("catalog.reqContactPlaceholder")}" required>
+      </div>
+      <div class="order-field">
+        <label for="orderEmail">${t("catalog.reqEmail")}</label>
+        <input id="orderEmail" name="email" type="email" placeholder="name@example.com">
       </div>
       <div class="order-field">
         <label for="orderMessage">${t("catalog.orderMessage")}</label>
@@ -760,46 +763,36 @@ window.openOrderModal = function (context) {
     submitBtn.textContent = t("catalog.reqSent");
   }
 
-  function unlockForm() {
-    form.querySelectorAll("input, textarea, .file-list button").forEach((el) => { el.disabled = false; });
-    submitBtn.disabled = false;
-    submitBtn.textContent = t("catalog.reqSend");
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = form.name.value.trim();
-    const contact = form.contact.value.trim();
-    const message = form.message.value.trim();
-
-    if (!name || !contact) {
-      statusEl.hidden = false;
-      statusEl.className = "request-status error";
-      statusEl.textContent = t("request.required");
-      return;
-    }
-
-    const requestId = generateRequestId();
-    try { localStorage.setItem("lastRequestId", requestId); } catch (err) {}
-
-    const purposeLabel = context.type === "print" ? "Order print" : context.type === "buy" ? "Buy model" : "Custom request";
-    const attachments = files.map((f) => f.name).join(", ");
-
-    const waLines = [
+  const waLinkFor = (id) => `${social.whatsapp}?text=${encodeURIComponent([
       purposeLabel + (context.name ? ": " + context.name : ""),
       context.price ? "Price: " + fmt(context.price) + " ₽" : "",
-      "Request ID: " + requestId,
+      "Request ID: " + id,
       "Name: " + name,
       "Contact: " + contact,
+      visitorEmail ? "Email: " + visitorEmail : "",
       message ? "Message: " + message : "",
       files.length ? "Attachments: " + attachments : "",
-    ].filter(Boolean).join("\n");
+    ].filter(Boolean).join("\n"))}`;
 
-    const waLink = `${social.whatsapp}?text=${encodeURIComponent(waLines)}`;
+  async function submitRequest(apiFormData) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 25000);
+    try {
+      const res = await fetch("/api/request", { method: "POST", body: apiFormData, signal: controller.signal });
+      const data = await res.json().catch(() => ({}));
+      return res.ok && data.ok ? data.id : null;
+    } catch (err) {
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 
+  function showSuccess(requestId, apiFailed) {
     statusEl.hidden = false;
     statusEl.className = "request-status success";
     statusEl.innerHTML = `
+      ${apiFailed ? `<div class="request-api-error">${t("catalog.reqApiError")}</div>` : ""}
       <div class="request-id-block">
         <div class="request-id-label">${t("catalog.reqIdLabel")}</div>
         <div class="request-id-field">
@@ -809,11 +802,8 @@ window.openOrderModal = function (context) {
         <div class="request-id-hint">${t("catalog.reqIdHint").replace("{track}", '<a href="#track">').replace("{/track}", "</a>")}</div>
       </div>
       <div class="request-handoff">
-        <a class="handoff" href="${waLink}" target="_blank">📲 ${t("catalog.reqWhatsapp")}</a>
-      </div>
-      ${email ? `<div class="request-email-state" id="requestEmailState">${t("catalog.reqSending")}…</div>` : ""}`;
-    lockForm();
-
+        <a class="handoff" href="${waLinkFor(requestId)}" target="_blank">📲 ${t("catalog.reqWhatsapp")}</a>
+      </div>`;
     const idCopy = statusEl.querySelector("[data-copy-id]");
     if (idCopy) idCopy.addEventListener("click", async () => {
       try {
@@ -828,41 +818,57 @@ window.openOrderModal = function (context) {
         sel.addRange(range);
       }
     });
+  }
 
-    if (email) {
-      const emailState = document.getElementById("requestEmailState");
-      try {
-        const formData = new FormData();
-        formData.append("request_id", requestId);
-        formData.append("purpose", purposeLabel);
-        formData.append("item", context.name || "");
-        formData.append("price", context.price || "");
-        formData.append("name", name);
-        formData.append("contact", contact);
-        formData.append("message", message);
-        formData.append("files", attachments);
-        formData.append("_subject", `Request ${requestId} - Suntar-Plastic (${name})`);
-        formData.append("_captcha", "false");
-        formData.append("_honey", form.querySelector('[name="_honey"]').value);
-        formData.append("_template", "table");
-        for (const f of files) formData.append("attachment", f, f.name);
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = form.name.value.trim();
+    const contact = form.contact.value.trim();
+    const visitorEmail = form.email.value.trim();
+    const message = form.message.value.trim();
 
-        const res = await fetch("https://formsubmit.co/ajax/" + email, {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.success !== false) {
-          if (emailState) emailState.textContent = "✓ " + t("catalog.reqEmailNote");
-        } else {
-          if (emailState) { emailState.textContent = t("catalog.reqError"); emailState.classList.add("request-email-error"); }
-          unlockForm();
-        }
-      } catch (err) {
-        if (emailState) { emailState.textContent = t("catalog.reqError"); emailState.classList.add("request-email-error"); }
-        unlockForm();
-      }
+    if (!name || !contact) {
+      statusEl.hidden = false;
+      statusEl.className = "request-status error";
+      statusEl.textContent = t("request.required");
+      return;
     }
+    if (visitorEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(visitorEmail)) {
+      statusEl.hidden = false;
+      statusEl.className = "request-status error";
+      statusEl.textContent = t("catalog.reqEmailError");
+      return;
+    }
+
+    const purposeLabel = context.type === "print" ? "Order print" : context.type === "buy" ? "Buy model" : "Custom request";
+    const attachments = files.map((f) => f.name).join(", ");
+
+    const localId = generateRequestId();
+    try { localStorage.setItem("lastRequestId", localId); } catch (err) {}
+
+    lockForm();
+    statusEl.hidden = false;
+    statusEl.className = "request-status success";
+    statusEl.innerHTML = `<div>${t("catalog.reqSending")}…</div>`;
+
+    const fd = new FormData();
+    const honey = form.querySelector('[name="_honey"]');
+    if (honey) fd.set("_honey", honey.value);
+    fd.set("purpose", purposeLabel);
+    fd.set("item", context.name || "");
+    if (context.price) fd.set("price", String(context.price));
+    fd.set("name", name);
+    fd.set("contact", contact);
+    if (visitorEmail) fd.set("email", visitorEmail);
+    if (message) fd.set("message", message);
+    for (const f of files) fd.append("file", f, f.name);
+
+    const serverId = await submitRequest(fd);
+    const requestId = serverId || localId;
+    if (serverId) {
+      try { localStorage.setItem("lastRequestId", requestId); } catch (err) {}
+    }
+    showSuccess(requestId, !serverId);
   });
 
   modal.hidden = false;
@@ -889,6 +895,26 @@ function initRequestTracker(requests) {
 
   const STATUS_STEPS = ["received", "printing", "ready", "done"];
 
+  function fmtDate(ms) {
+    if (!ms) return "—";
+    return new Date(Number(ms)).toLocaleString(currentLang === "en" ? "en-US" : currentLang === "sah" ? "ru-RU" : "ru-RU");
+  }
+
+  async function lookupRequest(id) {
+    try {
+      const res = await fetch("/api/track?id=" + encodeURIComponent(id), { signal: AbortSignal.timeout(6000) });
+      const data = await res.json().catch(() => ({}));
+      if (data && data.found && data.status) {
+        return {
+          status: data.status,
+          updatedAt: fmtDate(data.updated_at),
+          note: data.note || "",
+        };
+      }
+    } catch (err) {}
+    return (requests || []).find((r) => String(r.id || "").trim().toUpperCase() === id) || null;
+  }
+
   function renderStatus(item) {
     const cancelled = item.status === "cancelled" || item.status === "declined";
     const step = STATUS_STEPS.indexOf(item.status);
@@ -912,14 +938,18 @@ function initRequestTracker(requests) {
     e.preventDefault();
     const id = input.value.trim().toUpperCase();
     if (!id) return;
-    const item = (requests || []).find((r) => String(r.id || "").trim().toUpperCase() === id);
-    if (!item) {
-      result.className = "track-result track-error";
-      result.innerHTML = `<div class="track-error-text">${t("track.notFound")}</div>`;
-      result.hidden = false;
-      return;
-    }
-    renderStatus(item);
+    result.className = "track-result";
+    result.innerHTML = `<div class="track-error-text">${t("track.searching")}…</div>`;
+    result.hidden = false;
+    lookupRequest(id).then((item) => {
+      if (!item) {
+        result.className = "track-result track-error";
+        result.innerHTML = `<div class="track-error-text">${t("track.notFound")}</div>`;
+        result.hidden = false;
+        return;
+      }
+      renderStatus(item);
+    });
   });
 }
 
