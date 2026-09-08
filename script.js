@@ -776,44 +776,47 @@ window.openOrderModal = function (context) {
 
   let holdTimer = null;
 
-  function cancelHold() {
+  function setHoldMsg(text) {
+    statusEl.hidden = false;
+    statusEl.className = "request-status info";
+    statusEl.textContent = text;
+  }
+
+  function cancelHold(early) {
     if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
     submitBtn.classList.remove("holding");
     if (!busy) submitBtn.textContent = t("catalog.reqSend");
+    if (early && !busy) setHoldMsg(t("catalog.reqHoldEarly"));
+  }
+
+  function startHold() {
+    if (busy || submitBtn.disabled || holdTimer) return;
+    submitBtn.classList.add("holding");
+    submitBtn.textContent = t("catalog.reqHold");
+    setHoldMsg(t("catalog.reqHoldHint"));
+    holdTimer = setTimeout(() => {
+      holdTimer = null;
+      submitBtn.classList.remove("holding");
+      submitBtn.textContent = t("catalog.reqSend");
+      form.requestSubmit();
+    }, 1200);
   }
 
   submitBtn.addEventListener("pointerdown", (e) => {
     if (busy || submitBtn.disabled) return;
     e.preventDefault();
-    cancelHold();
-    submitBtn.classList.add("holding");
-    submitBtn.textContent = t("catalog.reqHold");
-    holdTimer = setTimeout(() => {
-      holdTimer = null;
-      submitBtn.classList.remove("holding");
-      submitBtn.textContent = t("catalog.reqSend");
-      form.requestSubmit();
-    }, 1200);
+    startHold();
   });
-  submitBtn.addEventListener("pointerup", cancelHold);
+  submitBtn.addEventListener("pointerup", () => cancelHold(true));
   submitBtn.addEventListener("pointerleave", cancelHold);
   submitBtn.addEventListener("pointercancel", cancelHold);
   submitBtn.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
     e.preventDefault();
-    if (busy || submitBtn.disabled) return;
-    cancelHold();
-    submitBtn.classList.add("holding");
-    submitBtn.textContent = t("catalog.reqHold");
-    holdTimer = setTimeout(() => {
-      holdTimer = null;
-      submitBtn.classList.remove("holding");
-      submitBtn.textContent = t("catalog.reqSend");
-      form.requestSubmit();
-    }, 1200);
+    startHold();
   });
   submitBtn.addEventListener("keyup", (e) => {
-    if (e.key === "Enter" || e.key === " ") cancelHold();
+    if (e.key === "Enter" || e.key === " ") cancelHold(true);
   });
   submitBtn.addEventListener("blur", cancelHold);
   window._orderModalCancelHold = cancelHold;
