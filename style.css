@@ -1527,14 +1527,16 @@ body.modal-open { overflow: hidden; }
   cursor: wait;
 }
 
-.order-submit.holding::after {
+.order-submit::after {
   content: "";
   position: absolute;
   inset: 0;
   background: rgba(255, 255, 255, 0.28);
   border-radius: 6px;
   transform-origin: left;
-  animation: order-hold-fill 2s linear forwards;
+  transform: scaleX(var(--hold, 0));
+  transition: transform 0.15s linear;
+  pointer-events: none;
 }
 
 @keyframes order-hold-fill {

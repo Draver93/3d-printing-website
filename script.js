@@ -776,44 +776,50 @@ window.openOrderModal = function (context) {
 
   const HOLD_MS = 2000;
   let holdStart = 0;
-  let holdTimer = null;
-  let resetTimer = null;
+  let rafId = null;
+  let holdActive = false;
 
-  function clearTimers() {
-    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-    if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+  function setProgress(pct) {
+    submitBtn.style.setProperty("--hold", pct);
   }
 
-  function resetButton() {
-    clearTimers();
+  function clearHold() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    holdActive = false;
     submitBtn.classList.remove("holding");
+    setProgress(0);
     if (!busy) submitBtn.textContent = t("catalog.reqSend");
   }
 
   function fireHold() {
-    holdTimer = null;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    holdActive = false;
     submitBtn.classList.remove("holding");
+    setProgress(0);
     submitBtn.textContent = t("catalog.reqSend");
     form.requestSubmit();
   }
 
+  function tick() {
+    const pct = Math.min(1, (Date.now() - holdStart) / HOLD_MS);
+    setProgress(pct);
+    if (pct >= 1) { fireHold(); return; }
+    rafId = requestAnimationFrame(tick);
+  }
+
   function startHold() {
     if (busy || submitBtn.disabled) return;
-    clearTimers();
-    submitBtn.classList.remove("holding");
-    void submitBtn.offsetWidth;
+    clearHold();
+    holdActive = true;
     submitBtn.classList.add("holding");
     submitBtn.textContent = t("catalog.reqHold");
     holdStart = Date.now();
-    holdTimer = setTimeout(fireHold, HOLD_MS);
+    rafId = requestAnimationFrame(tick);
   }
 
   function releaseHold() {
-    if (!holdTimer) return;
-    const remain = Math.max(100, HOLD_MS - (Date.now() - holdStart));
-    clearTimeout(holdTimer);
-    holdTimer = null;
-    resetTimer = setTimeout(resetButton, remain);
+    if (!holdActive) return;
+    clearHold();
   }
 
   submitBtn.addEventListener("pointerdown", (e) => {
@@ -832,8 +838,8 @@ window.openOrderModal = function (context) {
   submitBtn.addEventListener("keyup", (e) => {
     if (e.key === "Enter" || e.key === " ") releaseHold();
   });
-  submitBtn.addEventListener("blur", resetButton);
-  window._orderModalCancelHold = resetButton;
+  submitBtn.addEventListener("blur", clearHold);
+  window._orderModalCancelHold = clearHold;
 
   function lockForm() {
     form.querySelectorAll("input, textarea, .file-list button").forEach((el) => { el.disabled = true; });
