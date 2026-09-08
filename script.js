@@ -1,7 +1,8 @@
 const app = document.getElementById("app");
 
-/* API backend (Cloudflare Worker). When the Worker is deployed, set the URL
-   here. Leave API_BASE = "" to auto-detect same-origin /api on Cloudflare Pages. */
+/* API backend (Cloudflare Worker, created manually in the dashboard).
+   Set this to your Worker URL after creating it, e.g.
+   const API_BASE = "https://request-handler.workers.dev"; */
 const API_BASE = "";
 
 /* Optional Cloudflare Turnstile CAPTCHA for the request form.

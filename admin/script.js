@@ -654,9 +654,9 @@ function cloudListHtml(rows, token) {
           <span class="cloud-date">${r.created_at ? new Date(r.created_at).toLocaleString("ru-RU") : ""}</span>
         </div>
         <div class="cloud-line">${esc(r.purpose || "")}${r.item ? " · " + esc(r.item) : ""}${r.price ? " · " + r.price + " ₽" : ""}</div>
-        <div class="cloud-line">${esc(r.name || "")} · ${esc(r.contact || "")}${r.email ? " · " + esc(r.email) : ""}</div>
+        <div class="cloud-line">${esc(r.name || "")} · ${esc(r.contact || "")}</div>
         ${r.message ? `<div class="cloud-line cloud-message">${esc(r.message)}</div>` : ""}
-        ${files.length ? `<div class="cloud-line cloud-files">📎 ${files.map((f) => `<a href="${apiUrl("/api/file")}?req=${encodeURIComponent(r.id)}&dl=${encodeURIComponent(r.dl_token || "")}&f=${encodeURIComponent(f)}" target="_blank" rel="noopener">${esc(f)}</a>`).join(" · ")}</div>` : ""}
+        ${files.length ? `<div class="cloud-line cloud-files">📎 Файлы (пришли в Telegram): ${files.map((f) => esc(f)).join(" · ")}</div>` : ""}
         <div class="cloud-edit">
           <select data-status>${Object.keys(CLOUD_STATUS_LABELS).map((s) => `<option value="${s}" ${s === r.status ? "selected" : ""}>${CLOUD_STATUS_LABELS[s]}</option>`).join("")}</select>
           <input type="text" data-note value="${esc(r.note || "")}" placeholder="Примечание (видит клиент)">
@@ -698,11 +698,11 @@ function renderCloudRequests() {
   panel.innerHTML = `
     <div class="connection-form">
       <h3>Заявки (Cloudflare)</h3>
-      <p class="conn-hint">Заявки с формы сайта хранятся в Cloudflare D1 и приходят вам в Telegram со ссылками на файлы. Здесь можно посмотреть все заявки и менять статус — его видит клиент на странице отслеживания.</p>
+      <p class="conn-hint">Заявки с формы сайта хранятся в Cloudflare D1 и приходят вам в Telegram вместе с файлами. Здесь можно посмотреть все заявки и менять статус — его видит клиент на странице отслеживания.</p>
       <div class="form-field">
         <label>Ключ доступа (API_TOKEN)</label>
         <input type="password" id="cloudToken" value="${esc(token)}" autocomplete="off" spellcheck="false" placeholder="тот же ключ, что задан секретом API_TOKEN на Cloudflare">
-        <div class="field-hint">Задайте его на Cloudflare: <b>wrangler pages secret put API_TOKEN</b> (или в настройках Pages → Settings → Variables).</div>
+        <div class="field-hint">Задайте его на Cloudflare: Worker → Settings → Variables and Secrets → Add variable → <b>API_TOKEN</b> (тип Secret).</div>
       </div>
       <div class="conn-actions">
         <button class="btn-primary" id="cloudLoad">Загрузить заявки</button>
