@@ -775,6 +775,8 @@ window.openOrderModal = function (context) {
   });
 
   const HOLD_MS = 2000;
+  const HOLD_BASE = 0.3;
+  const DECLINE_MS = 350;
   let holdStart = 0;
   let rafId = null;
   let holdActive = false;
@@ -783,25 +785,47 @@ window.openOrderModal = function (context) {
     submitBtn.style.setProperty("--hold", pct);
   }
 
-  function clearHold() {
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    holdActive = false;
+  function sendMsg(text, cls) {
+    statusEl.hidden = false;
+    statusEl.className = "request-status " + (cls || "info");
+    statusEl.textContent = text;
+  }
+
+  function revertButton() {
     submitBtn.classList.remove("holding");
     setProgress(0);
     if (!busy) submitBtn.textContent = t("catalog.reqSend");
   }
 
+  function clearHold() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    holdActive = false;
+    revertButton();
+  }
+
+  function decline(cb) {
+    const from = Number(submitBtn.style.getPropertyValue("--hold")) || 0;
+    const start = performance.now();
+    const step = (now) => {
+      const k = Math.min(1, (now - start) / DECLINE_MS);
+      setProgress(Math.max(0, from * (1 - k)));
+      if (k < 1) { rafId = requestAnimationFrame(step); return; }
+      rafId = null;
+      revertButton();
+      if (cb) cb();
+    };
+    rafId = requestAnimationFrame(step);
+  }
+
   function fireHold() {
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     holdActive = false;
-    submitBtn.classList.remove("holding");
-    setProgress(0);
-    submitBtn.textContent = t("catalog.reqSend");
+    revertButton();
     form.requestSubmit();
   }
 
   function tick() {
-    const pct = Math.min(1, (Date.now() - holdStart) / HOLD_MS);
+    const pct = Math.min(1, HOLD_BASE + (1 - HOLD_BASE) * ((Date.now() - holdStart) / HOLD_MS));
     setProgress(pct);
     if (pct >= 1) { fireHold(); return; }
     rafId = requestAnimationFrame(tick);
@@ -813,13 +837,17 @@ window.openOrderModal = function (context) {
     holdActive = true;
     submitBtn.classList.add("holding");
     submitBtn.textContent = t("catalog.reqHold");
+    setProgress(HOLD_BASE);
     holdStart = Date.now();
     rafId = requestAnimationFrame(tick);
   }
 
   function releaseHold() {
     if (!holdActive) return;
-    clearHold();
+    holdActive = false;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    sendMsg(t("catalog.reqHoldEarly"), "info");
+    decline(revertButton);
   }
 
   submitBtn.addEventListener("pointerdown", (e) => {
