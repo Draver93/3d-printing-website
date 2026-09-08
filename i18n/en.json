@@ -96,7 +96,7 @@
     "reqIdLabel": "Your request ID",
     "reqIdCopy": "Copy",
     "reqIdCopied": "Copied!",
-    "reqIdHint": "Save this ID — you can check your request status on the {track}Track your request{/track} page.",
+    "reqIdHint": "Save this ID. Your request status is updated within 24 hours — check it on the {track}Track your request{/track} page.",
     "orderStart": "Start a request",
     "orderMessage": "Message (optional)",
     "orderMessagePlaceholder": "e.g. amount, size, delivery, timeline",
