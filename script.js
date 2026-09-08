@@ -785,12 +785,6 @@ window.openOrderModal = function (context) {
     submitBtn.style.setProperty("--hold", pct);
   }
 
-  function sendMsg(text, cls) {
-    statusEl.hidden = false;
-    statusEl.className = "request-status " + (cls || "info");
-    statusEl.textContent = text;
-  }
-
   function revertButton() {
     submitBtn.classList.remove("holding");
     setProgress(0);
@@ -846,8 +840,7 @@ window.openOrderModal = function (context) {
     if (!holdActive) return;
     holdActive = false;
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    sendMsg(t("catalog.reqHoldEarly"), "info");
-    decline(revertButton);
+    decline();
   }
 
   submitBtn.addEventListener("pointerdown", (e) => {
