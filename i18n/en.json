@@ -89,6 +89,7 @@
     "reqAttachmentsHint": "You can attach a 3D file or a photo. The files are sent along with your request.",
     "reqRemove": "Remove file",
     "reqSend": "Send request",
+    "reqHold": "Hold to send",
     "reqSent": "Request sent",
     "reqSending": "Sending...",
     "reqApiError": "Couldn't send automatically \u2014 your request is saved with the ID above.",

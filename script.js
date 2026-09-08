@@ -676,6 +676,7 @@ function initOrderModal(email, social) {
   function close() {
     modal.hidden = true;
     document.body.classList.remove("modal-open");
+    if (typeof window._orderModalCancelHold === "function") window._orderModalCancelHold();
   }
 
   modal.querySelectorAll("[data-order-close]").forEach((el) => {
@@ -732,7 +733,7 @@ window.openOrderModal = function (context) {
         <div class="material-hint">${t("catalog.reqAttachmentsHint")}</div>
       </div>` : ""}
       ${TURNSTILE_SITEKEY ? `<div class="order-field"><div class="cf-turnstile" data-sitekey="${TURNSTILE_SITEKEY}"></div></div>` : ""}
-      <button type="submit" class="btn-primary order-submit" id="orderSubmit">${t("catalog.reqSend")}</button>
+      <button type="button" class="btn-primary order-submit" id="orderSubmit">${t("catalog.reqSend")}</button>
       <div class="request-status" id="orderStatus" hidden></div>
     </form>`;
 
@@ -772,6 +773,50 @@ window.openOrderModal = function (context) {
       e.preventDefault();
     }
   });
+
+  let holdTimer = null;
+
+  function cancelHold() {
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    submitBtn.classList.remove("holding");
+    if (!busy) submitBtn.textContent = t("catalog.reqSend");
+  }
+
+  submitBtn.addEventListener("pointerdown", (e) => {
+    if (busy || submitBtn.disabled) return;
+    e.preventDefault();
+    cancelHold();
+    submitBtn.classList.add("holding");
+    submitBtn.textContent = t("catalog.reqHold");
+    holdTimer = setTimeout(() => {
+      holdTimer = null;
+      submitBtn.classList.remove("holding");
+      submitBtn.textContent = t("catalog.reqSend");
+      form.requestSubmit();
+    }, 1200);
+  });
+  submitBtn.addEventListener("pointerup", cancelHold);
+  submitBtn.addEventListener("pointerleave", cancelHold);
+  submitBtn.addEventListener("pointercancel", cancelHold);
+  submitBtn.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    if (busy || submitBtn.disabled) return;
+    cancelHold();
+    submitBtn.classList.add("holding");
+    submitBtn.textContent = t("catalog.reqHold");
+    holdTimer = setTimeout(() => {
+      holdTimer = null;
+      submitBtn.classList.remove("holding");
+      submitBtn.textContent = t("catalog.reqSend");
+      form.requestSubmit();
+    }, 1200);
+  });
+  submitBtn.addEventListener("keyup", (e) => {
+    if (e.key === "Enter" || e.key === " ") cancelHold();
+  });
+  submitBtn.addEventListener("blur", cancelHold);
+  window._orderModalCancelHold = cancelHold;
 
   function lockForm() {
     form.querySelectorAll("input, textarea, .file-list button").forEach((el) => { el.disabled = true; });
