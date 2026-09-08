@@ -16,3 +16,11 @@ CREATE TABLE IF NOT EXISTS requests (
 );
 
 CREATE INDEX IF NOT EXISTS idx_requests_created ON requests(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS rate (
+  ip TEXT NOT NULL,
+  req_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_rate_ip_time ON rate(ip, req_at);
+CREATE INDEX IF NOT EXISTS idx_rate_time ON rate(req_at);

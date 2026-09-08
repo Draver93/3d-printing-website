@@ -6,6 +6,11 @@ const GITHUB_API = "https://api.github.com";
 const LANGS = ["ru", "en", "sah"];
 const LANG_NAMES = { ru: "Русский", en: "English", sah: "Саха тыла" };
 
+/* Cloudflare Worker base URL for the requests API. Set to your Worker URL
+   (e.g. https://your-project.workers.dev) once deployed; leave "" for same-origin. */
+const API_BASE = "";
+function apiUrl(path) { return API_BASE ? API_BASE + path : path; }
+
 /* ===== Разделы навигации ===== */
 
 const NAV = [
@@ -651,7 +656,7 @@ function cloudListHtml(rows, token) {
         <div class="cloud-line">${esc(r.purpose || "")}${r.item ? " · " + esc(r.item) : ""}${r.price ? " · " + r.price + " ₽" : ""}</div>
         <div class="cloud-line">${esc(r.name || "")} · ${esc(r.contact || "")}${r.email ? " · " + esc(r.email) : ""}</div>
         ${r.message ? `<div class="cloud-line cloud-message">${esc(r.message)}</div>` : ""}
-        ${files.length ? `<div class="cloud-line cloud-files">📎 ${files.map((f) => `<a href="/api/file?req=${encodeURIComponent(r.id)}&dl=${encodeURIComponent(r.dl_token || "")}&f=${encodeURIComponent(f)}" target="_blank" rel="noopener">${esc(f)}</a>`).join(" · ")}</div>` : ""}
+        ${files.length ? `<div class="cloud-line cloud-files">📎 ${files.map((f) => `<a href="${apiUrl("/api/file")}?req=${encodeURIComponent(r.id)}&dl=${encodeURIComponent(r.dl_token || "")}&f=${encodeURIComponent(f)}" target="_blank" rel="noopener">${esc(f)}</a>`).join(" · ")}</div>` : ""}
         <div class="cloud-edit">
           <select data-status>${Object.keys(CLOUD_STATUS_LABELS).map((s) => `<option value="${s}" ${s === r.status ? "selected" : ""}>${CLOUD_STATUS_LABELS[s]}</option>`).join("")}</select>
           <input type="text" data-note value="${esc(r.note || "")}" placeholder="Примечание (видит клиент)">
@@ -670,7 +675,7 @@ function bindCloudList(rows, token) {
       const note = card.querySelector("[data-note]").value.trim();
       btn.disabled = true;
       try {
-        const res = await fetch("/api/requests", {
+        const res = await fetch(apiUrl("/api/requests"), {
           method: "PATCH",
           headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
           body: JSON.stringify({ id, status, note }),
@@ -712,7 +717,7 @@ function renderCloudRequests() {
     if (!tk) return setStatus("Введите ключ доступа.", "error");
     setStatus("Загружаем заявки...", "info");
     try {
-      const res = await fetch("/api/requests", { headers: { Authorization: "Bearer " + tk } });
+      const res = await fetch(apiUrl("/api/requests"), { headers: { Authorization: "Bearer " + tk } });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (res.status === 401) return setStatus("Неверный ключ доступа (401). Проверьте API_TOKEN.", "error");

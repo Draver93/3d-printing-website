@@ -1,4 +1,17 @@
 const app = document.getElementById("app");
+
+/* API backend (Cloudflare Worker). When the Worker is deployed, set the URL
+   here. Leave API_BASE = "" to auto-detect same-origin /api on Cloudflare Pages. */
+const API_BASE = "";
+
+/* Optional Cloudflare Turnstile CAPTCHA for the request form.
+   Leave empty ("") to disable. Set to your Turnstile Site Key to enable. */
+const TURNSTILE_SITEKEY = "";
+
+function apiUrl(path) {
+  return API_BASE ? API_BASE + path : path;
+}
+
 let currentLang = ["en", "ru", "sah"].includes(localStorage.getItem("lang")) ? localStorage.getItem("lang") : "en";
 let translations = {};
 
@@ -719,6 +732,7 @@ window.openOrderModal = function (context) {
         <div class="file-list" id="orderFileList"></div>
         <div class="material-hint">${t("catalog.reqAttachmentsHint")}</div>
       </div>` : ""}
+      ${TURNSTILE_SITEKEY ? `<div class="order-field"><div class="cf-turnstile" data-sitekey="${TURNSTILE_SITEKEY}"></div></div>` : ""}
       <button type="submit" class="btn-primary order-submit" id="orderSubmit">${t("catalog.reqSend")}</button>
       <div class="request-status" id="orderStatus" hidden></div>
     </form>`;
@@ -763,7 +777,7 @@ window.openOrderModal = function (context) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 25000);
     try {
-      const res = await fetch("/api/request", { method: "POST", body: apiFormData, signal: controller.signal });
+      const res = await fetch(apiUrl("/api/request"), { method: "POST", body: apiFormData, signal: controller.signal });
       const data = await res.json().catch(() => ({}));
       return res.ok && data.ok ? data.id : null;
     } catch (err) {
@@ -828,6 +842,12 @@ window.openOrderModal = function (context) {
     const fd = new FormData();
     const honey = form.querySelector('[name="_honey"]');
     if (honey) fd.set("_honey", honey.value);
+    if (TURNSTILE_SITEKEY) {
+      const w = window.turnstile;
+      const tk = w && typeof w.getResponse === "function" ? w.getResponse() : "";
+      fd.set("cf-turnstile-response", tk);
+      if (w && typeof w.reset === "function") w.reset();
+    }
     fd.set("purpose", purposeLabel);
     fd.set("item", context.name || "");
     if (context.price) fd.set("price", String(context.price));
@@ -875,7 +895,7 @@ function initRequestTracker(requests) {
 
   async function lookupRequest(id) {
     try {
-      const res = await fetch("/api/track?id=" + encodeURIComponent(id), { signal: AbortSignal.timeout(6000) });
+      const res = await fetch(apiUrl("/api/track?id=" + encodeURIComponent(id)), { signal: AbortSignal.timeout(6000) });
       const data = await res.json().catch(() => ({}));
       if (data && data.found && data.status) {
         return {
@@ -1159,6 +1179,13 @@ async function renderSite() {
 
   setTimeout(initMap, 100);
   window.newsData = news;
+  if (TURNSTILE_SITEKEY && !document.querySelector('script[src*="turnstile"]')) {
+    const sc = document.createElement("script");
+    sc.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    sc.async = true;
+    sc.defer = true;
+    document.head.appendChild(sc);
+  }
   initGalleryPaging(gallery);
   initNewsCarousel();
   initNewsModal();

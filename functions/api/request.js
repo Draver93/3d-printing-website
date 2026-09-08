@@ -2,10 +2,15 @@ const ALLOWED_EXT = ["stl", "obj", "3mf", "step", "stp", "png", "jpg", "jpeg", "
 const MAX_TOTAL = 25 * 1024 * 1024;
 const MAX_FILES = 8;
 
+const RATE_WINDOW_SEC = 300; // 5 minutes
+const RATE_MAX_PER_IP = 5;   // max submissions per IP per window (after Turnstile/TL check)
+const BURST_WINDOW_SEC = 60;
+const BURST_MAX_GLOBAL = 30; // hard guard so nobody floods your Telegram
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json; charset=utf-8" },
+    headers: { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*" },
   });
 }
 
@@ -31,6 +36,26 @@ function sanitizeName(name) {
   return base.slice(0, 160);
 }
 
+function clientIP(request) {
+  return request.headers.get("CF-Connecting-IP") || request.headers.get("x-forwarded-for") || "";
+}
+
+async function verifyTurnstile(env, token) {
+  const secret = env.TURNSTILE_SECRET;
+  if (!secret || !token) return false;
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret, response: token }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return !!data.success;
+  } catch (err) {
+    return false;
+  }
+}
+
 async function notifyTelegram(env, r) {
   const origin = String(env.SITE_ORIGIN || "").replace(/\/+$/, "");
   const lines = [
@@ -40,7 +65,6 @@ async function notifyTelegram(env, r) {
     r.price ? "Цена: " + r.price + " ₽" : "",
     "Имя: " + esc(r.name),
     "Контакт: " + esc(r.contact),
-    r.email ? "Email: " + esc(r.email) : "",
     r.message ? "Сообщение:\n" + esc(r.message) : "",
   ].filter(Boolean).join("\n");
 
@@ -76,14 +100,41 @@ async function notifyTelegram(env, r) {
   }
 }
 
-export const onRequestPost = async ({ request, env }) => {
+export const onRequestPost = async (context) => {
+  const { request, env } = context;
   const url = new URL(request.url);
   if (url.pathname !== "/api/request") return json({ error: "notfound" }, 404);
 
-  const fb = await request.formData();
+  // -- SPAM HARD GUARDS (before parsing body/file uploads) --
+  const ip = clientIP(request);
+  const now = Math.floor(Date.now() / 1000);
 
+  // 1) Global burst guard
+  const burst = await env.DB.prepare(
+    "SELECT COUNT(*) AS c FROM requests WHERE created_at >= ?"
+  ).bind(now - BURST_WINDOW_SEC * 1000).first();
+  if (burst && Number(burst.c) > BURST_MAX_GLOBAL) return json({ error: "toofast" }, 429);
+
+  // 2) Per-IP rate limit tracked in a small rate table
+  await env.DB.prepare(
+    `INSERT INTO rate (ip, req_at) VALUES (?, ?)`
+  ).bind(ip || "unknown", now).run();
+  await env.DB.prepare("DELETE FROM rate WHERE req_at < ?").bind(now - RATE_WINDOW_SEC).run();
+  const mine = await env.DB.prepare(
+    "SELECT COUNT(*) AS c FROM rate WHERE ip = ? AND req_at >= ?"
+  ).bind(ip || "unknown", now - RATE_WINDOW_SEC).first();
+  if (mine && Number(mine.c) > RATE_MAX_PER_IP) return json({ error: "toofast" }, 429);
+
+  // -- HONEYPOT + TURNSTILE --
+  const fb = await request.formData();
   if (fb.get("_honey")) return json({ error: "spam" }, 400);
 
+  if (env.TURNSTILE_SECRET) {
+    const pass = await verifyTurnstile(env, String(fb.get("cf-turnstile-response") || ""));
+    if (!pass) return json({ error: "captcha" }, 403);
+  }
+
+  // -- VALIDATION --
   const name = String(fb.get("name") || "").trim();
   const contact = String(fb.get("contact") || "").trim();
   if (!name || !contact) return json({ error: "required" }, 422);
