@@ -383,40 +383,6 @@ header {
 .conn-site { font-size: 0.85rem; color: var(--text-muted); }
 .conn-site a { color: var(--primary); }
 
-.cloud-list { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
-.cloud-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1rem 1.1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-.cloud-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem; }
-.cloud-head strong { color: var(--primary); }
-.cloud-date { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
-.cloud-line { font-size: 0.85rem; line-height: 1.45; }
-.cloud-message {
-  font-size: 0.83rem;
-  color: var(--text-muted);
-  border-left: 3px solid var(--border);
-  padding-left: 0.6rem;
-  white-space: pre-wrap;
-}
-.cloud-files a { color: var(--primary); }
-.cloud-edit { display: flex; gap: 0.5rem; margin-top: 0.3rem; flex-wrap: wrap; }
-.cloud-edit select,
-.cloud-edit input {
-  padding: 0.4rem 0.55rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 0.85rem;
-}
-.cloud-edit input { flex: 1 1 200px; }
-
 /* ===== Тексты сайта ===== */
 
 .i18n-toolbar {

@@ -1,9 +1,7 @@
 const app = document.getElementById("app");
 
-/* API backend (Cloudflare Worker, created manually in the dashboard).
-   Set this to your Worker URL after creating it, e.g.
-   const API_BASE = "https://request-handler.workers.dev"; */
-const API_BASE = "";
+/* API backend (Cloudflare Worker, no database) */
+const API_BASE = "https://billowing-dawn-c138.alexeyf-160620.workers.dev";
 
 /* Optional Cloudflare Turnstile CAPTCHA for the request form.
    Leave empty ("") to disable. Set to your Turnstile Site Key to enable. */
